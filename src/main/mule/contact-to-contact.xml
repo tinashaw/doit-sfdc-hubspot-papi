@@ -8,24 +8,24 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
-	<flow name="contact-to-contactFlow" doc:id="7c7de41f-df9b-4a5e-ab14-f467856fe850">
-		<salesforce:modified-object-listener objectType="Contact" doc:name="On Modified Object" doc:id="3c5379ba-12cd-4f07-94ee-b1ec7272e881" config-ref="Salesforce_Config" since="${salesforce.since}">
+	<flow name="contact-to-contactFlow" doc:id="f08b8942-1dd6-490e-a105-74126a8a7905">
+		<salesforce:modified-object-listener objectType="Contact" doc:name="On Modified Object" doc:id="ac755a92-277b-46df-8750-1efc5b0b3d9a" config-ref="Salesforce_Config" since="${salesforce.since}">
 			<scheduling-strategy>
 				<fixed-frequency />
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="39fbbccf-4a5b-43d3-aae9-e2afe0ecc272">
+		<choice doc:name="Choice" doc:id="4c7e99b7-5aae-483e-baad-588f824ab237">
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]">
-				<flow-ref doc:name="Flow Ref to sf-contact-sync-to-hubspotFlow" doc:id="1f05eac0-113d-4056-9aaa-ea4dbf4996c4" name="sf-contact-sync-to-hubspotFlow" />
-				<logger level="INFO" doc:name="Log Completed" doc:id="0bccd631-7b7e-47de-8486-1124c2653977" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
+				<flow-ref doc:name="Flow Ref to sf-contact-sync-to-hubspotFlow" doc:id="375305bf-b2e6-4b9c-8f6c-194d3a3b7fad" name="sf-contact-sync-to-hubspotFlow" />
+				<logger level="INFO" doc:name="Log Completed" doc:id="df9d8f0d-27c0-4463-a24a-bf9e422a05fd" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 			</when>
 			<otherwise>
-				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="371ad416-05dd-4a6d-8087-94acb47a0f01" message='"Last Updated by Integration User"' />
+				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="6ea16440-6ff1-4bf5-b9e7-800a88ceb03a" message='"Last Updated by Integration User"' />
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="87069507-1459-4630-acaa-5943044e9e77" >
-				<ee:transform doc:name="Set Error Payload" doc:id="a514bf1a-79ed-4fad-9907-2a8676f6f3be" >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="0dfd24e3-23de-4c59-b2af-2c73c2942f27" >
+				<ee:transform doc:name="Set Error Payload" doc:id="bbaf91f9-3265-4642-b8c9-570c859cc769" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -35,14 +35,14 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<logger level="ERROR" doc:name="Log Error" doc:id="093449b1-3757-4f47-b83e-b56b790ddebd" message="#[payload]" />
+				<logger level="ERROR" doc:name="Log Error" doc:id="aeced751-313f-45e5-88e1-c3036d93f2e6" message="#[payload]" />
 			</on-error-propagate>
 		</error-handler>
 	
 </flow>
-	<flow name="sf-contact-sync-to-hubspotFlow" doc:id="446101f3-6d4d-4e52-8908-a473dbe5ba1c" initialState="started">
-		<logger level="INFO" doc:name="Log Started" doc:id="9869d07d-3a59-43a4-b9a9-f3adc95a6453" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-		<ee:transform doc:name="Set Ids" doc:id="457dcae9-df96-4852-b89c-5c9dd7701961">
+	<flow name="sf-contact-sync-to-hubspotFlow" doc:id="8fe12f55-b744-46ff-a036-a8c81024f1f7" initialState="started">
+		<logger level="INFO" doc:name="Log Started" doc:id="114af996-2ff4-4296-a951-a5311867d79f" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+		<ee:transform doc:name="Set Ids" doc:id="273a4e08-bc08-4ed2-8135-8dbf53da7531">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -76,22 +76,22 @@ payload.AccountId]]></ee:set-variable>
 			
 </ee:variables>
 		</ee:transform>
-<flow-ref doc:name="Flow Ref to fetch Hubspot CompanyId" doc:id="1d308535-2fbf-441d-a97b-baaf81283f31" target="companyId" name="get-salesforce-account-data" targetValue="#[payload.companyId]" />
-		<logger level="INFO" doc:name="Log companyId" doc:id="57af523e-6127-4503-9955-9db66eaf3437" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
-		<flow-ref doc:name="fetch ownerId" doc:id="1eca9a35-57f4-4a0f-abc1-ae728678e034" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
-		<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="2c01ffdf-769d-4a7e-a42c-917e4aa6a80a" name="contact-validation-subFlow" />
+<flow-ref doc:name="Flow Ref to fetch Hubspot CompanyId" doc:id="8ac1f8c2-bb33-4aa2-a5e6-0e07c0a4b99f" target="companyId" name="get-salesforce-account-data" targetValue="#[payload.companyId]" />
+		<logger level="INFO" doc:name="Log companyId" doc:id="c9151f4c-e04a-4040-96d3-ff82f3d10713" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
+		<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+		<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="771219d4-6a83-4e33-a33b-88eb34bff62b" name="contact-validation-subFlow" />
 	
 
 </flow>
-	<sub-flow name="contact-validation-subFlow" doc:id="71af9daf-ec78-48a7-8121-e955fd2149d4" >
-		<choice doc:name="Is vid == null ?" doc:id="7a51dfa0-71bd-4a24-8b84-1e56b283eae7">
+	<sub-flow name="contact-validation-subFlow" doc:id="182d8b41-012a-4625-a218-baff370bc888" >
+		<choice doc:name="Is vid == null ?" doc:id="df9ddc08-8b31-4e44-9c4f-b5d51f7b5f3e">
 			<when expression="#[vars.id.vid == null]">
-				<logger level="INFO" doc:name="Log Hubspot_Contact_ID__c = null" doc:id="80c4dd44-42bb-40c3-8eb2-36c4c295c33b" message='#["Hubspot_Contact_ID__c is null"]' />
-				<flow-ref doc:name="get hubspot contact by email" doc:id="0129c946-0845-4a70-9d33-de1c5ea66f76" name="get-hubspot-contact-by-emailSub_Flow" target="hubspotContact" />
-				<choice doc:name="isEmpty Hubspot Contact ?" doc:id="10a70ac9-3fd7-4dc7-8834-d45cdf884898">
+				<logger level="INFO" doc:name="Log Hubspot_Contact_ID__c = null" doc:id="fd468c2c-f999-48ba-ab1c-2c97023fc5c5" message='#["Hubspot_Contact_ID__c is null"]' />
+				<flow-ref doc:name="get hubspot contact by email" doc:id="2cf1ec15-51dc-4746-8fa1-ef002d8d156e" name="get-hubspot-contact-by-emailSub_Flow" target="hubspotContact" />
+				<choice doc:name="isEmpty Hubspot Contact ?" doc:id="a86185f3-68f5-47f7-ab45-022941378125">
 			<when expression="#[isEmpty(vars.hubspotContact)]">
-				<logger level="INFO" doc:name="Log Started" doc:id="c7f7aaa6-9acf-4dbb-82af-c7b7eaf6afab" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;Create contact in Hubspot flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-						<ee:transform doc:name="Mapping for Hubspot Contact" doc:id="c182280e-27dd-49b7-9655-d34d15fdbf37">
+				<logger level="INFO" doc:name="Log Started" doc:id="14a61135-4f79-431e-a6be-93222807a9e2" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;Create contact in Hubspot flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+						<ee:transform doc:name="Mapping for Hubspot Contact" doc:id="438ad6e2-cc66-4ddc-a712-22520afc6396">
 			<ee:message>
 								<ee:set-payload resource="dwl/contact/contact-create-one-to-one-map.dwl" />
 			
@@ -100,21 +100,16 @@ payload.AccountId]]></ee:set-variable>
 			</ee:variables>
 		
 </ee:transform>
-				<ee:transform doc:name="Set payload as per Hubspot" doc:id="e3d81cfc-e78e-4bf7-a9b1-d331aa280d71">
+				<ee:transform doc:name="Set payload as per Hubspot" doc:id="a7828b42-bf26-4147-ad62-4ff0ff50e0b8">
 			<ee:message>
 								<ee:set-payload resource="dwl/contact/create-contact-as-per-HS.dwl" />
 			
 </ee:message>
 		</ee:transform>
-				<http:request method="POST" doc:name="create contact in Hubspot" doc:id="8a0d360d-8e1a-4a90-b256-7a7523916d69" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/create" responseTimeout="#[p('hubspot-sapi.responseTimeout')]">
-			<http:headers><![CDATA[#[output application/java
----
-{
-	"Authorization" : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
-}]]]></http:headers>
+				<http:request method="POST" doc:name="create contact in Hubspot" doc:id="8407aad5-e3ac-4237-9536-c6ab412a7efe" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/create" responseTimeout="#[p('hubspot-sapi.responseTimeout')]" sendCorrelationId="ALWAYS">
 		</http:request>
-				<logger level="INFO" doc:name="Log Contact Creation Successful" doc:id="656f93ce-8f2a-4704-af9c-42e5ca6872a4" message='#["Contact created in Hubspot and vid is " ++ payload.vid as String default null]' />
-						<ee:transform doc:name="Mapping to sync back Hubspot contactID" doc:id="e0cdb069-0228-45dd-a1e4-d112c3973cdc">
+				<logger level="INFO" doc:name="Log Contact Creation Successful" doc:id="f3bce323-d094-4e24-aedb-50f49505497b" message='#["Contact created in Hubspot and vid is " ++ payload.vid as String default null]' />
+						<ee:transform doc:name="Mapping to sync back Hubspot contactID" doc:id="c14c5982-ae27-476d-a297-0cec50574d76">
 			<ee:message>
 								<ee:set-payload resource="dwl/contact/create-contact-sync-back.dwl" />
 
@@ -122,8 +117,8 @@ payload.AccountId]]></ee:set-variable>
 			<ee:variables>
 			</ee:variables>
 		</ee:transform>
-				<http:request method="POST" doc:name="Update SF Contact" doc:id="864d1531-3eda-4504-95e5-34d13373a1e2" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/update" responseTimeout="#[p('salesforce-sapi.responseTimeout')]" />
-				<ee:transform doc:name="Set Response Payload" doc:id="90eb0c9c-987a-4f82-b8bc-949b0defac8f">
+				<http:request method="POST" doc:name="Update SF Contact" doc:id="472adf57-7451-46fb-98f1-37da7b13aba3" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/update" responseTimeout="#[p('salesforce-sapi.responseTimeout')]" sendCorrelationId="ALWAYS"/>
+				<ee:transform doc:name="Set Response Payload" doc:id="97803a14-596a-4a00-88e8-dd030b38fae5">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -131,13 +126,13 @@ output application/json
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-						<logger level="INFO" doc:name="Log Completed" doc:id="d75c411c-1319-4c5a-8462-1093aa363267" message="Contact Creation in Hubspot  Completed" />
+						<logger level="INFO" doc:name="Log Completed" doc:id="909e7f38-a348-45ce-a112-50174b2d4e1f" message="Contact Creation in Hubspot  Completed" />
 			
 
 </when>
 			<otherwise>
-						<logger level="INFO" doc:name="Log Started" doc:id="0631c54a-653b-4cf0-ba7c-fdbd12f219fa" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;Update contact in Hubspot flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-						<ee:transform doc:name="Map Ids" doc:id="ec95a69c-f4bd-47c4-9eb8-02221a6b68f9">
+						<logger level="INFO" doc:name="Log Started" doc:id="f29a9fe4-2a17-4539-9a1e-d32c1b9c81fd" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;Update contact in Hubspot flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+						<ee:transform doc:name="Map Ids" doc:id="c3d07244-4dad-48bb-a7ce-31d15fa940de">
 					<ee:message>
 					</ee:message>
 							<ee:variables>
@@ -145,16 +140,16 @@ payload]]></ee:set-payload>
 							
 </ee:variables>
 				</ee:transform>
-						<flow-ref doc:name="Flow Reference update-contact-in-hs" doc:id="a9ae8a0c-6a20-4765-9656-819bebceb136" name="update-contact-in-hs" />
-						<ee:transform doc:name="Mapping to sync back Hubspot contactID" doc:id="95093e43-66eb-4c17-ab06-ca72224212f4">
+						<flow-ref doc:name="Flow Reference update-contact-in-hs" doc:id="82027fd7-7a60-404d-a060-88d34415ddc8" name="update-contact-in-hs" />
+						<ee:transform doc:name="Mapping to sync back Hubspot contactID" doc:id="15b3f11c-3ab9-4c1e-87f9-6c164e02550c">
 							<ee:message>
 								<ee:set-payload resource="dwl/contact/update-contact-sync-back.dwl" />
 							
 </ee:message>
 							<ee:variables />
 						</ee:transform>
-						<http:request method="POST" doc:name="Update SF Contact" doc:id="f39526f4-0f6b-480c-bbbd-2bf1acffce8d" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/update" responseTimeout="#[p('salesforce-sapi.responseTimeout')]" />
-						<logger level="INFO" doc:name="Log Completed" doc:id="79cb321c-a45d-43b7-bb8d-d337d707bd01" message="Contact Update in Hubspot  Completed" />
+						<http:request method="POST" doc:name="Update SF Contact" doc:id="dc247649-cec6-428e-961f-565a126fb656" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/update" responseTimeout="#[p('salesforce-sapi.responseTimeout')]" sendCorrelationId="ALWAYS"/>
+						<logger level="INFO" doc:name="Log Completed" doc:id="29e5055b-6281-4e4e-84be-4e3897ebfc9e" message="Contact Update in Hubspot  Completed" />
 			
 
 </otherwise>
@@ -162,31 +157,31 @@ payload]]></ee:set-payload>
 			
 </when>
 			<otherwise>
-				<logger level="INFO" doc:name="Log Hubspot_Contact_ID__c != null" doc:id="f31ca42d-6811-4467-b84e-beaecc95f034" message='#["Hubspot_Contact_ID__c already present in Salesforce"]' />
-				<logger level="INFO" doc:name="Log Started" doc:id="6edeae92-33c7-43de-b7c9-1ecf19197a57" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;Update contact in Hubspot flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-				<flow-ref doc:name="Flow Reference update-contact-in-hs" doc:id="6ed5ff44-3c7b-43c2-8968-4aa3acee21f9" name="update-contact-in-hs" />
-				<ee:transform doc:name="Mapping to sync back Hubspot contactID" doc:id="32a0c9c4-440f-4a59-9b64-42cd5313103d">
+				<logger level="INFO" doc:name="Log Hubspot_Contact_ID__c != null" doc:id="5940f86e-def4-4b75-bbe7-2f773f8269ce" message='#["Hubspot_Contact_ID__c already present in Salesforce"]' />
+				<logger level="INFO" doc:name="Log Started" doc:id="abaa187f-9268-4fad-83c8-61255d790eac" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;Update contact in Hubspot flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+				<flow-ref doc:name="Flow Reference update-contact-in-hs" doc:id="02eadeab-b671-46b3-9b9b-2acd65fad9d2" name="update-contact-in-hs" />
+				<ee:transform doc:name="Mapping to sync back Hubspot contactID" doc:id="97c46807-286d-4daf-8012-924efd7797a9">
 							<ee:message>
 						<ee:set-payload resource="dwl/contact/default-update-contact-sync-back.dwl" />
 							
 </ee:message>
 							<ee:variables />
 						</ee:transform>
-				<http:request method="POST" doc:name="Update SF Contact" doc:id="02df5bcb-e001-42e3-ab01-68c34c4c9526" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/update" responseTimeout="#[p('salesforce-sapi.responseTimeout')]" />
-				<logger level="INFO" doc:name="Log Completed" doc:id="f91697c6-7785-4395-901a-8be1cf6078bc" message="Contact Update in Hubspot  Completed" />
+				<http:request method="POST" doc:name="Update SF Contact" doc:id="409472b0-8669-43f1-ac86-9b96c2471b6c" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/update" responseTimeout="#[p('salesforce-sapi.responseTimeout')]" sendCorrelationId="ALWAYS"/>
+				<logger level="INFO" doc:name="Log Completed" doc:id="782ebf89-d3d4-421b-ae58-2ca4c15a12b2" message="Contact Update in Hubspot  Completed" />
 			
 </otherwise>
 		</choice>
 	</sub-flow>
-	<flow name="sf-contactId-to-hs-contact-vid-Flow" doc:id="781c046b-b48a-4a83-a0af-a7f7b9963ce2" >
-		<http:request method="GET" doc:name="Request to Get Contact Details" doc:id="9de1453c-d1c8-40a8-9fb3-e18578a09508" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/{id}" targetValue="#[payload[0]]" >
+	<flow name="sf-contactId-to-hs-contact-vid-Flow" doc:id="0b7ae7cc-017b-4e0c-b9a7-9c61db250fe1" >
+		<http:request method="GET" doc:name="Request to Get Contact Details" doc:id="fc62b417-ad07-4b8a-be32-d3959a901929" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/{id}" targetValue="#[payload[0]]" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
 	id : vars.id.ContactId
 }]]]></http:uri-params>
 		</http:request>
-		<ee:transform doc:name="Java to Json" doc:id="5b7993be-7bc6-4f1f-a80f-d4e4952b1ccf">
+		<ee:transform doc:name="Java to Json" doc:id="295aa06d-adc4-4723-8809-e47701f5f32c">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -194,9 +189,9 @@ output application/json
 payload[0]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="e9198206-2a29-40a7-8b82-1893b8ee7358" >
+		<choice doc:name="Choice" doc:id="dc09141e-1779-496d-a9fd-c50d916c8d3f" >
 			<when expression="#[payload.Hubspot_Contact_ID__c != null]" >
-				<ee:transform doc:name="Set contactId" doc:id="51cc596d-b6bf-48fb-8521-444cc79b923d" >
+				<ee:transform doc:name="Set contactId" doc:id="ec9471eb-9074-4ce0-845b-b7c4a97ecbb2" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -207,8 +202,8 @@ payload.Hubspot_Contact_ID__c]]></ee:set-payload>
 			
 </when>
 			<otherwise >
-				<flow-ref doc:name="sf-contact-sync-to-hubspotFlow" doc:id="03f89356-1ff8-464a-a7a0-5bd1a419678b" name="sf-contact-sync-to-hubspotFlow" />
-				<ee:transform doc:name="Set contactId" doc:id="f4d95542-dc44-43f8-a679-a91535adfa7e" >
+				<flow-ref doc:name="sf-contact-sync-to-hubspotFlow" doc:id="f242aaa8-0595-44d3-8fa2-8b863aec39a7" name="sf-contact-sync-to-hubspotFlow" />
+				<ee:transform doc:name="Set contactId" doc:id="bce3a37b-dd66-4db0-81c8-93372b357e0d" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -220,9 +215,9 @@ vars.companyId]]></ee:set-payload>
 </otherwise>
 		</choice>
 	</flow>
-	<sub-flow name="get-hubspot-contact-by-emailSub_Flow" doc:id="5cc09d0d-52f1-4b2e-9179-d7432f99829c" >
-		<try doc:name="Try" doc:id="3179d24e-305d-4117-8186-0d67f9a76db3" >
-			<http:request method="GET" doc:name="get Hubspot Contact by Email" doc:id="61002c04-2926-4b57-a152-de164e0dad3b" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/email/{email}" responseTimeout="#[p('hubspot-sapi.responseTimeout')]">
+	<sub-flow name="get-hubspot-contact-by-emailSub_Flow" doc:id="501231d0-8f38-4b65-9539-46f0ce45519d" >
+		<try doc:name="Try" doc:id="0bcb5a76-f9f6-46c8-ae48-b6a063b0d4cd" >
+			<http:request method="GET" doc:name="get Hubspot Contact by Email" doc:id="1425803b-bb04-44c7-b161-c80977d18dbb" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/email/{email}" responseTimeout="#[p('hubspot-sapi.responseTimeout')]" sendCorrelationId="ALWAYS">
 				<http:uri-params ><![CDATA[#[output application/java
 ---
 {
@@ -230,9 +225,9 @@ vars.companyId]]></ee:set-payload>
 }]]]></http:uri-params>
 		</http:request>
 			<error-handler >
-				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="565b67ce-728f-4f8d-96f5-aafc7bbdbf25" type="HTTP:NOT_FOUND">
-					<logger level="DEBUG" doc:name="Log 'No Contact Found'" doc:id="40a4aa6e-d48e-425a-b3ef-5b7bc081f9a1" message='#["No Contact is found in Hubspot with email: " ++ vars.id.email as String]'/>
-					<ee:transform doc:name="Set Payload as Null" doc:id="df0be2e0-2397-4c42-a59b-c018eeaeb6ed" >
+				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="31485e49-f162-4dee-acfe-9a12bb6aaa42" type="HTTP:NOT_FOUND">
+					<logger level="DEBUG" doc:name="Log 'No Contact Found'" doc:id="9654acbd-d843-4b57-bf24-83d3e083b570" message='#["No Contact is found in Hubspot with email: " ++ vars.id.email as String]'/>
+					<ee:transform doc:name="Set Payload as Null" doc:id="c398062d-d53a-4f4d-81b7-1ae5ca08149c" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -243,7 +238,7 @@ null]]></ee:set-payload>
 				</on-error-continue>
 			</error-handler>
 		</try>
-		<ee:transform doc:name="Response Payload" doc:id="a3deeabb-0121-45bf-a4aa-f992fa70a286" >
+		<ee:transform doc:name="Response Payload" doc:id="c1d9db4d-9701-4bbd-bda2-17cd85ec6b2a" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -251,9 +246,9 @@ output application/json
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-<!-- [STUDIO:"Choice"]		<choice doc:name="Choice" doc:id="8bb5ac64-ae0d-4e15-84aa-ea30fdafa29e" >
+<!-- [STUDIO:"Choice"]		<choice doc:name="Choice" doc:id="860dfddc-1f4d-47ae-96f0-301725fd499f" >
 			<when expression="#[sizeOf(payload) == 1]">
-				<ee:transform doc:name="Transform Message" doc:id="74d6eb1b-0cbf-46dc-bf97-4fecf39778a8" >
+				<ee:transform doc:name="Transform Message" doc:id="8cc1c659-c79b-4b2a-9046-b23a70bad70f" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -263,7 +258,7 @@ payload]]></ee:set-payload>
 				</ee:transform>
 			</when>
 			<when expression="#[sizeOf(payload) == 0]">
-				<ee:transform doc:name="Transform Message" doc:id="5ea1ea45-0abd-49d5-8d8e-e61170ec6f41" >
+				<ee:transform doc:name="Transform Message" doc:id="2841d9f2-83af-434d-a11e-76c93d5f597a" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -273,13 +268,13 @@ null]]></ee:set-payload>
 				</ee:transform>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="c113e294-80b2-44dc-8ee0-dc94166742c1" />
+				<logger level="INFO" doc:name="Logger" doc:id="72c0087e-249b-42cb-b147-010c11aa5322" />
 			</otherwise>
 		</choice> [STUDIO] -->
 	</sub-flow>
-	<sub-flow name="update-contact-in-hs" doc:id="e75793ec-a8f4-400c-8bf7-613e5f99c0d0" >
-		<logger level="DEBUG" doc:name="Log Start" doc:id="b47d2647-d847-40be-a02d-cd517409ca1d" message="Contact Update in Hubspot flow started"/>
-		<ee:transform doc:name="Mapping for Hubspot Contact" doc:id="661595d6-7719-4905-bc1c-26b6ff2b4b2a" >
+	<sub-flow name="update-contact-in-hs" doc:id="ab7c32a4-c03e-4c5d-8619-07d62a9c5622" >
+		<logger level="DEBUG" doc:name="Log Start" doc:id="fe7e6ebf-8b8a-4cff-84e9-cd50fa60ca90" message="Contact Update in Hubspot flow started"/>
+		<ee:transform doc:name="Mapping for Hubspot Contact" doc:id="309d77d4-1fe3-458a-a33b-3b207fdf989c" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -321,7 +316,7 @@ var picklist = readUrl("classpath://picklist.json", "application/json")
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Set payload as per Hubspot" doc:id="c00bc1ef-bf87-45b0-b9ac-79c0f3446e2d" >
+		<ee:transform doc:name="Set payload as per Hubspot" doc:id="3d737b07-cd32-4ec7-b3fa-e97ed63b44dc" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -336,29 +331,24 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<http:request method="POST" doc:name="Request to update contact in Hubspot" doc:id="99170e81-cd90-4219-86df-a8b467989819" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/update" responseTimeout="#[p('hubspot-sapi.responseTimeout')]" >
-			<http:headers ><![CDATA[#[output application/java
----
-{
-	"Authorization" : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
-}]]]></http:headers>
+		<http:request method="POST" doc:name="Request to update contact in Hubspot" doc:id="fdd6c545-0c52-40a8-9258-5baae3ad4e69" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/update" responseTimeout="#[p('hubspot-sapi.responseTimeout')]" sendCorrelationId="ALWAYS">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
 	vid : vars.id.vid
 }]]]></http:query-params>
 		</http:request>
-		<logger level="INFO" doc:name="Log End with Hubspot Id" doc:id="2622e04b-ada6-4af9-ac25-2b06391cf174" message="Contact updated in Hubspot and vid is #[vars.id.vid]"/>
+		<logger level="INFO" doc:name="Log End with Hubspot Id" doc:id="88fe4c4e-6d1b-40db-bd42-1459e4f0c685" message="Contact updated in Hubspot and vid is #[vars.id.vid]"/>
 	</sub-flow>
-	<flow name="get-salesforce-account-data" doc:id="02ab6d97-a949-4b9b-bea6-3004fe9e5e1e" >
-		<http:request method="GET" doc:name="Request SF to get Account by Id" doc:id="0c55e475-86f0-4207-974d-fedf8d35d8c0" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/{id}">
+	<flow name="get-salesforce-account-data" doc:id="1869b547-e508-46ca-b365-026f711712ef" >
+		<http:request method="GET" doc:name="Request SF to get Account by Id" doc:id="91d0e4a2-7c11-4b11-b08d-de23c2ae3b6c" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/{id}" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
 	"id" : vars.accountId
 }]]]></http:uri-params>
 		</http:request>
-		<ee:transform doc:name="Set Response Payload" doc:id="59781abe-c002-45ef-afd6-2f499357f400" >
+		<ee:transform doc:name="Set Response Payload" doc:id="b17cafda-8706-4d08-a191-7e3fcecc6aea" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -366,6 +356,6 @@ output application/json
 payload[0]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="Flow Ref to fetch Hubspot Company Id" doc:id="5029102d-ea84-4d3b-a0df-5b9b7d5af336" name="sfdc-account-to-company-hubspotFlow"/>
+		<flow-ref doc:name="Flow Ref to fetch Hubspot Company Id" doc:id="2aeb6574-ff17-483b-8052-00c4c41661b3" name="sfdc-account-to-company-hubspotFlow"/>
 	</flow>
 </mule>

@@ -137,6 +137,25 @@
 				"Tele Accepted Lead": "Tele Accepted Lead"
 		}
 	},
+	"lead":
+	{
+		"MQL_Achievement_Reason__c": {
+				"Appointment Setting": "Appointment Setting",
+				"Attended Event": "Attended Event",
+				"Attended Webinar": "Attended Webinar",
+				"CMP Test Drive Inquiry": "Test Drive Talk to Sales",
+				"Drift": "Drift",
+				"Event Hand Raiser": "Event Hand Raiser",
+				"Flexsave Hand Raiser": "Flexsave Hand Raiser",
+				"FlexSave Inquiry": "FlexSave",
+				"Hand Raiser Submission": "BOFU Submission",
+				"ISV Program Inquiry": "ISV Program",
+				"Lead Scoring": "Lead Scoring",
+				"Other": "Other",
+				"Scale Team": "Scale Team"
+		}
+	},
+	
 	"company" :{
 		"Flexsave_GCP_Marketplace__c":{
 				"true": "True",

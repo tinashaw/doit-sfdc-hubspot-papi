@@ -180,7 +180,7 @@ output application/json
 		<logger level="INFO" doc:name="Logger start create company flow" doc:id="1344c242-e87c-40ef-afb5-ba476baf2b75" message="start create company flow"/>
 		<ee:transform doc:name="Mapping For HS Company" doc:id="db78a4c6-afd8-4fff-8b1e-d65aec0a237b" >
 			<ee:message >
-				<ee:set-payload resource="dwl/account/p-create-contact.dwl" />
+				<ee:set-payload resource="dwl/account/p-create-company.dwl" />
 			
 </ee:message>
 		</ee:transform>

@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="account-to-companyFlow" doc:id="48bff788-08fe-4b73-8c62-958792d45529" >
+		<salesforce:modified-object-listener objectType="Account" doc:name="On Modified Object" doc:id="37821650-b497-4752-98e3-24109dcdaff0" config-ref="Salesforce_Config" since="${salesforce.since}">
+			<scheduling-strategy>
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<choice doc:name="Choice" doc:id="0d4ab0cb-de89-4287-beb3-ba2e715660d1" >
+			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]" >
+				<flow-ref doc:name="Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="f3f79eda-d24d-40d8-b157-28a2f8c572a3" name="sfdc-account-to-company-hubspotFlow" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="e4069af3-d9de-41b6-a16a-0727047d3887" message='"Last Updated by Integration User"' />
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="aba02334-150e-4b27-a37a-f004996bb59a" >
+				<ee:transform doc:name="Set Error Payload" doc:id="5130ebd0-ce62-48c8-9e82-78e341789d18" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": error.errorMessage.typedValue default error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="ERROR" doc:name="Log Error" doc:id="505db895-a77c-4632-80d6-6e2ae8a07b26" message="#[payload]" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="sfdc-account-to-company-hubspotFlow" doc:id="95f61ced-07ff-48b0-b344-87dbe51b387c" initialState="started">
+		<logger level="INFO" doc:name="Log Started" doc:id="7f9a675e-cb9a-4cce-b33e-25172b1e6376" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Account to HS Company flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+		<ee:transform doc:name="Mapping for sf - hs" doc:id="89a1fa68-4b2d-40c5-ba03-0286f37c289a">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="ownerId"><![CDATA[%dw 2.0
+output application/json
+---
+payload.OwnerId]]></ee:set-variable>
+				<ee:set-variable variableName="mappingPayload"><![CDATA[%dw 2.0
+output application/json
+var picklist = readUrl("classpath://picklist.json", "application/json")
+---
+{
+    "annualrevenue" : payload.AnnualRevenue,
+	"azure_revenue" : payload.Azure_Revenue__c,
+	"cmp_aws_revenue" : payload.AWS_Revenue__c,
+	"cmp_aws_services" : payload.AWS_Services__c,
+	"cmp_g_suite" : if(payload.G_Suite__c != null) picklist.account.G_Suite__c[(payload.G_Suite__c)] else null ,
+	"cmp_amazon_web_services" : payload.Amazon_Web_Services__c,
+	"cmp_gcp_revenue" : payload.GCP_Revenue__c,
+	"cmp_google_cloud" : if(payload.Google_Cloud__c != null) picklist.account.Google_Cloud__c[(payload.Google_Cloud__c)] else null ,
+	"cmp_link___company" : payload.CMP_Link_Company__c,
+	"cmp_microsoft_azure" : if(payload.Microsoft_Azure__c != null ) picklist.account.Microsoft_Azure__c[(payload.Microsoft_Azure__c)] else null ,
+	"cmp_office_365" : if(payload.Office_365__c != null) picklist.account.Office_365__c[(payload.Office_365__c)] else null ,
+	"domain" : payload.Company_Domain__c,
+	"consolidation_date" : payload.Consolidation_Date__c,
+	"country" : payload.Hubspot_Country__c,
+	"doit_parent_sales_region__c" : payload.DoiT_Parent_Sales_Region__c,
+	"flexsave_gcp_marketplace" : if(payload.Flexsave_GCP_Marketplace__c != null) picklist.account.Flexsave_GCP_Marketplace__c[(payload.Flexsave_GCP_Marketplace__c)] else null ,
+	//"hubspot_owner_id" : payload.OwnerId,
+	"hubspot_state_region__c" : payload.Hubspot_State_Region__c,
+	"industry" : payload.Industry_Text__c,
+	"lifecycle_stage__c" : payload.Lifecycle_Stage__c,
+	"marketing_right" : payload.Marketing_Rights__c,
+	"name" : payload.Name,
+	"numberofemployees" : payload.NumberOfEmployees,
+	"o365_revenue" : payload.O365_Revenue__c,
+	"phone" : payload.Phone,
+	"sfdc_account_id" : payload.Id,
+	"sfdc_became_a_former_customer" : payload.Became_a_Former_Customer__c,
+	"sfdc_segment" : payload.Segment__c,
+	"sfdc_sub_region" : payload.Sub_Region__c,
+	"state" : payload.Hubspot_State_Region__c,
+	"sub_industry__c" : payload.Sub_Industry__c,
+//	"type" : payload.'Type', //pending
+	"website" : payload.Website
+//	"vid" : payload.Hubspot_Company_ID__c
+}]]></ee:set-variable>
+				<ee:set-variable variableName="inputPayload"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="05be4893-e74d-4d2d-9d98-84e65e84a991" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+		<choice doc:name="Choice" doc:id="cb19a33f-41a5-4f0f-84c0-6ab68b221faf" >
+			<when expression="#[vars.inputPayload.Hubspot_Company_ID__c != null]">
+				<logger level="INFO" doc:name="Update Company" doc:id="a43a0ac5-8c79-46ab-8ba5-39de48576b34" message="Update Company"/>
+				<ee:transform doc:name="Set CompanyId" doc:id="e7de49d5-f9f2-4b5d-a461-abb49f2c098c">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.inputPayload.Hubspot_Company_ID__c]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="5d8a7e10-9986-41d2-a83a-2d78e4dfe530" name="update-company-in-hs"/>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="Flow Reference company-check-subflow" doc:id="0a741d47-25e9-4a13-bb94-2d219098b7bb" name="company-check-subflow"/>
+			
+</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Log Completed" doc:id="baa0cd95-c3db-49c9-831c-dbeed93f5d26" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Account to HS Company flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
+	
+
+</flow>
+	<flow name="accountId-to-companyId-Flow" doc:id="d2779fd4-499e-4ded-b420-82bfa420fec8" >
+		<http:request method="GET" doc:name="Request to Get Account Details" doc:id="037e62b2-ca73-42a5-8756-9a47db113c87" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/{id}" targetValue="#[payload[0]]" sendCorrelationId="ALWAYS">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	id : vars.id.AccountId
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Set Response Payload" doc:id="210daf9e-c014-44ba-92b3-ed61774021fa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="7ca00e66-de22-4cc5-8d4b-29fbfcf16eca" >
+			<when expression="#[payload.Hubspot_Company_ID__c != null]">
+				<ee:transform doc:name="Set companyId" doc:id="64a913e6-efc8-446d-95ff-099c7179cbfc">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.Hubspot_Company_ID__c]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="Flow Reference sfdc-account-to-company-hubspotFlow" doc:id="025b1d63-b0d0-4d36-a243-5eda0d3cb7fc" name="sfdc-account-to-company-hubspotFlow" />
+				<ee:transform doc:name="Set companyId" doc:id="4ac47ade-dd0b-4dcf-bcf0-62bb8a1e107e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.companyId]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<sub-flow name="company-check-subflow" doc:id="365dd851-43df-4fe0-b4c3-5763b9d43cb6" >
+		<http:request method="POST" doc:name="Request to get matching company by SF Company_Domain__c in HS" doc:id="20132ce8-9665-4450-8620-3e32251c9936" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/domain" sendCorrelationId="ALWAYS">
+					<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+  "requestOptions": {
+    "properties": [
+      "companyId",
+      "name",
+      "lifecycle_stage__c",
+      "hs_lastmodifieddate"
+    ]
+  },
+  "offset": {
+    "isPrimary": true,
+    "companyId": 0
+  }
+}]]]></http:body>
+					<http:query-params><![CDATA[#[output application/java
+---
+{
+	domain : payload.Company_Domain__c
+}]]]></http:query-params>
+				</http:request>
+		<ee:transform doc:name="Find CompanyId from HS on the basis of lifecycle stage and last modified date" doc:id="90d42ac6-7686-496e-930c-e68bd4da9ef1" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
+output application/json
+fun matchingCompany(p)=((p.results) filter ((item, index) -> item.properties.lifecycle_stage__c.value == vars.inputPayload.Lifecycle_Stage__c ) orderBy ((item, index) -> -(item.properties.hs_lastmodifieddate.value) ))[0].companyId
+---
+if(sizeOf(payload.results)>1) matchingCompany(payload) else payload.results.companyId[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="e0a41cab-18fb-4441-81c4-f23e9c3d855c" >
+			<when expression="#[vars.companyId != null]">
+				<logger level="INFO" doc:name="UPDATE company" doc:id="9f1ff332-b586-4a7c-82a6-4209479ab857" message="UPDATE company"/>
+				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="e460b619-1405-4afc-9453-ab8b3dfb82d7" name="update-company-in-hs"/>
+				<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="940dab15-837e-4c3e-9fff-3bb10a7f5abb" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS">
+					<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+[{"Hubspot_Company_ID__c": vars.companyId,
+	"Id":vars.inputPayload.Id
+}]]]]></http:body>
+				</http:request>
+				<logger level="INFO" doc:name="Log Ids" doc:id="ecf9a33e-8418-41b8-ab00-5a11b756adf7" message='#[{"Hubspot_Company_ID__c": vars.companyId,&#10;	"Account Id":vars.inputPayload.Id,&#10;	"Message" : "Company Updated in Hubspot"&#10;}]' />
+			
+</when>
+			<otherwise >
+				<flow-ref doc:name="Flow Reference to create-company-in-hs" doc:id="ae12482c-fc46-4663-a9b8-f9d969dce861" name="create-company-in-hs"/>
+			
+</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="create-company-in-hs" doc:id="bdcce01b-12b1-4898-9071-33b972d02ad1" >
+		<logger level="INFO" doc:name="Logger start create company flow" doc:id="02d73def-015b-4334-90f8-f04bc9b73839" message="start create company flow"/>
+		<ee:transform doc:name="Mapping For HS Company" doc:id="85ab1026-9b7b-400e-a1cd-37d48eb7ff82" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var picklist = readUrl("classpath://picklist.json", "application/json")
+---
+{
+    "annualrevenue" : vars.inputPayload.AnnualRevenue,
+	"azure_revenue" : vars.inputPayload.Azure_Revenue__c,
+	"cmp_aws_revenue" : vars.inputPayload.AWS_Revenue__c,
+	"cmp_aws_services" : vars.inputPayload.AWS_Services__c,
+	"cmp_g_suite" : if(vars.inputPayload.G_Suite__c != null) picklist.account.G_Suite__c[(vars.inputPayload.G_Suite__c)] else null ,
+	"cmp_amazon_web_services" : picklist.account.Amazon_Web_Services__c[(vars.inputPayload.Amazon_Web_Services__c)],
+	"cmp_gcp_revenue" : vars.inputPayload.GCP_Revenue__c,
+	"cmp_google_cloud" : if(vars.inputPayload.Google_Cloud__c != null) picklist.account.Google_Cloud__c[(vars.inputPayload.Google_Cloud__c)] else null ,
+	"cmp_link___company" : vars.inputPayload.CMP_Link_Company__c,
+	"cmp_microsoft_azure" : if(vars.inputPayload.Microsoft_Azure__c != null ) picklist.account.Microsoft_Azure__c[(vars.inputPayload.Microsoft_Azure__c)] else null ,
+	"cmp_office_365" : if(vars.inputPayload.Office_365__c != null) picklist.account.Office_365__c[(vars.inputPayload.Office_365__c)] else null ,
+	"domain" : vars.inputPayload.Company_Domain__c,
+	("consolidation_date" : vars.inputPayload.Consolidation_Date__c as Date {format:"yyyy-MM-dd"} as String {format: "yyyy-MM-dd'T'00:00:00"} as DateTime as Number {unit: "milliseconds"} )if(vars.inputPayload.Consolidation_Date__c != null),
+	"country" : vars.inputPayload.Hubspot_Country__c,
+	"doit_parent_sales_region__c" : vars.inputPayload.DoiT_Parent_Sales_Region__c,
+	"flexsave_gcp_marketplace" : if(vars.inputPayload.Flexsave_GCP_Marketplace__c != null) picklist.account.Flexsave_GCP_Marketplace__c[(vars.inputPayload.Flexsave_GCP_Marketplace__c)] else null ,
+	"hubspot_owner_id" : vars.ownerId,
+	"hubspot_state_region__c" : vars.inputPayload.Hubspot_State_Region__c,
+	"industry" : vars.inputPayload.Industry_Text__c,
+	"lifecycle_stage__c" : vars.inputPayload.Lifecycle_Stage__c,
+	"marketing_right" : picklist.account.Marketing_Rights__c[(vars.inputPayload.Marketing_Rights__c)],
+	"name" : vars.inputPayload.Name,
+	"numberofemployees" : vars.inputPayload.NumberOfEmployees,
+	"o365_revenue" : vars.inputPayload.O365_Revenue__c,
+	"phone" : vars.inputPayload.Phone,
+	"sfdc_account_id" : vars.inputPayload.Id,
+	"sfdc_became_a_former_customer" : vars.inputPayload.Became_a_Former_Customer__c,
+	"sfdc_segment" : vars.inputPayload.Segment__c,
+	"sfdc_sub_region" : vars.inputPayload.Sub_Region__c,
+	"state" : vars.inputPayload.Hubspot_State_Region__c,
+	"sub_industry__c" : vars.inputPayload.Sub_Industry__c,
+//	"type" : vars.inputPayload.'Type', //pending
+	"website" : vars.inputPayload.Website
+//	"vid" : vars.inputPayload.Hubspot_Company_ID__c
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Set Payload as per HS Sapi" doc:id="c0ceb601-8df0-46c3-9e32-a15315d0c666">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+// data = vars.mappingPayload //++ {"hubspot_company_id__c": vars.companyId}
+---
+{
+  "properties": payload pluck ( 
+    { 
+        "name": $$,
+        "value": $
+    }
+  )
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request HS Sapi to Create Company" doc:id="5fbf3357-a028-4309-91c2-117aa09aad59" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="createdCompany" sendCorrelationId="ALWAYS">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger completed create company flow" doc:id="b79dea53-b664-49e4-964b-2fbf9b6d7a40" message="completed create company flow  with company ID   #[vars.createdCompany.companyId]"/>
+		<ee:transform doc:name="Set CompanyId" doc:id="bf7c4d5a-1ac5-47c1-bc15-7a3744122392" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.createdCompany.companyId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="004a58e8-ec85-4d78-83ac-bb60a2bc0e0b" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS">
+			<http:body ><![CDATA[#[%dw 2.0
+output application/json
+---
+[{"Hubspot_Company_ID__c": vars.companyId,
+	"Id":vars.inputPayload.Id
+}]]]]></http:body>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="d923d95b-2947-44b7-a92b-41993f49cf2c" message='#[{"Hubspot_Company_ID__c": vars.companyId,&#10;	"Account Id":vars.inputPayload.Id,&#10;	"Message" : "Company Created in Hubspot"&#10;}]'/>
+	</sub-flow>
+	<sub-flow name="update-company-in-hs" doc:id="9187ae0d-a749-4dcc-ba27-b9130534e57c" >
+		<logger level="INFO" doc:name="Update company later proceed" doc:id="9e5e69fb-3f38-4d37-82bc-9bb2c685c3e8" message="update company flow started"/>
+		<ee:transform doc:name="Mapping For HS Company" doc:id="194f3aeb-d976-4553-b5b3-53f1d2029076" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var picklist = readUrl("classpath://picklist.json", "application/json")
+---
+{
+    "annualrevenue" : vars.inputPayload.AnnualRevenue,
+	"azure_revenue" : vars.inputPayload.Azure_Revenue__c,
+	"cmp_aws_revenue" : vars.inputPayload.AWS_Revenue__c,
+	"cmp_aws_services" : vars.inputPayload.AWS_Services__c,
+	"cmp_g_suite" : if(vars.inputPayload.G_Suite__c != null) picklist.account.G_Suite__c[(vars.inputPayload.G_Suite__c)] else null ,
+	"cmp_amazon_web_services" : picklist.account.Amazon_Web_Services__c[(vars.inputPayload.Amazon_Web_Services__c)],	
+	"cmp_gcp_revenue" : vars.inputPayload.GCP_Revenue__c,
+	"cmp_google_cloud" : if(vars.inputPayload.Google_Cloud__c != null) picklist.account.Google_Cloud__c[(vars.inputPayload.Google_Cloud__c)] else null ,
+	"cmp_link___company" : vars.inputPayload.CMP_Link_Company__c,
+	"cmp_microsoft_azure" : if(vars.inputPayload.Microsoft_Azure__c != null ) picklist.account.Microsoft_Azure__c[(vars.inputPayload.Microsoft_Azure__c)] else null ,
+	"cmp_office_365" : if(vars.inputPayload.Office_365__c != null) picklist.account.Office_365__c[(vars.inputPayload.Office_365__c)] else null ,
+	"domain" : vars.inputPayload.Company_Domain__c,
+	("consolidation_date" : vars.inputPayload.Consolidation_Date__c as Date {format:"yyyy-MM-dd"} as String {format: "yyyy-MM-dd'T'00:00:00"} as DateTime as Number {unit: "milliseconds"}) if(vars.inputPayload.Consolidation_Date__c != null),
+	"country" : vars.inputPayload.Hubspot_Country__c,
+	"doit_parent_sales_region__c" : vars.inputPayload.DoiT_Parent_Sales_Region__c,
+	"flexsave_gcp_marketplace" : if(vars.inputPayload.Flexsave_GCP_Marketplace__c != null) picklist.account.Flexsave_GCP_Marketplace__c[(vars.inputPayload.Flexsave_GCP_Marketplace__c)] else null ,
+	"hubspot_owner_id" : vars.ownerId,
+	"hubspot_state_region__c" : vars.inputPayload.Hubspot_State_Region__c,
+	"industry" : vars.inputPayload.Industry_Text__c,
+	"lifecycle_stage__c" : vars.inputPayload.Lifecycle_Stage__c,
+	"marketing_right" : picklist.account.Marketing_Rights__c[(vars.inputPayload.Marketing_Rights__c)],
+	"name" : vars.inputPayload.Name,
+	"numberofemployees" : vars.inputPayload.NumberOfEmployees,
+	"o365_revenue" : vars.inputPayload.O365_Revenue__c,
+	"phone" : vars.inputPayload.Phone,
+	"sfdc_account_id" : vars.inputPayload.Id,
+	"sfdc_became_a_former_customer" : vars.inputPayload.Became_a_Former_Customer__c,
+	"sfdc_segment" : vars.inputPayload.Segment__c,
+	"sfdc_sub_region" : vars.inputPayload.Sub_Region__c,
+	"state" : vars.inputPayload.Hubspot_State_Region__c,
+	"sub_industry__c" : vars.inputPayload.Sub_Industry__c,
+//	"type" : vars.inputPayload.'Type', //pending
+	"website" : vars.inputPayload.Website
+//	"vid" : vars.inputPayload.Hubspot_Company_ID__c
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Set Payload as per HS Sapi" doc:id="9f0bb833-1890-43f0-ae35-cabf886868c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+// data = vars.mappingPayload //++ {"hubspot_company_id__c": vars.companyId}
+---
+{
+  "properties": payload pluck ( 
+    { 
+        "name": $$,
+        "value": $
+    }
+  )
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request HS Sapi to Update Company" doc:id="452a48cd-88ff-43b0-bd77-0d7e76801546" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" sendCorrelationId="ALWAYS">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"companyId" : vars.companyId
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger completed create company flow" doc:id="b90ea13d-e2c6-42d7-a1fd-880a3f0fdc6c" message="completed update company flow  with company ID   #[vars.companyId]" />
+	</sub-flow>
+
+</mule>

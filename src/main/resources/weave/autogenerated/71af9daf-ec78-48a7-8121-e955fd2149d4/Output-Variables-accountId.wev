@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_71af9daf_ec78_48a7_8121_e955fd2149d4_Output_Variables_accountId = Any
+

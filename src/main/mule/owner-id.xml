@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="fetch-ownerId-for-hubspot-to-salesforceFlow" doc:id="35a9fdf9-55c9-4a1f-a157-e66b4b82d2d7" >
+		<http:request method="GET" doc:name="Get hubspot owner by id" doc:id="096aa995-e8d7-49cd-998a-d020da12ce4c" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/{id}" responseTimeout="60000" target="ownerId" >
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	ownerId : vars.ownerId
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="9d8ad9cd-58da-4e58-a708-6bdec772f57f" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="email" ><![CDATA[%dw 2.0
+output application/json
+---
+(vars.ownerId.email) as String]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<http:request method="GET" doc:name="Request" doc:id="1f2ef4f4-ef41-402b-bd7a-5779baea12f3" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/email" responseTimeout="60000" >
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"email" : vars.email
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="7e3a906f-63c6-4fe4-a583-a7069af90662" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.Id[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="3d32cd8b-fff7-4d5d-91d0-fdf4f763ed3f" >
+		<http:request method="GET" doc:name="Request" doc:id="b5eb01ea-76dc-4a37-ad10-80222aa0db76" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/id" target="ownerId" responseTimeout="60000">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"ownerId" : vars.ownerId
+}]]]></http:query-params>
+		</http:request>
+		<choice doc:name="Choice" doc:id="21789dfa-d739-401a-b6e0-521a761c177d" >
+			<when expression="#[!isEmpty(vars.ownerId.FederationIdentifier[0])]">
+				<ee:transform doc:name="Transform Message" doc:id="b886f528-d446-4a46-ad4d-475b9d6c8022">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="email"><![CDATA[%dw 2.0
+output application/json
+---
+(vars.ownerId.FederationIdentifier[0]) as String]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<http:request method="GET" doc:name="Get hubspot owner by email" doc:id="a9fca7c5-a992-4d41-a120-b18ee2b0c722" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/email" responseTimeout="#[p('hubspot-sapi.responseTimeout')]">
+					<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"email" : vars.email
+}]]]></http:query-params>
+
+		</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="1d481677-0fdc-4925-8675-9f5238cc9813">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.ownerId[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="523bae79-695d-490e-9685-763b2e88cd97" message="No FederationIdentifier found"/>
+				<ee:transform doc:name="Transform Message" doc:id="7ee5c86b-9340-4d24-a84d-fd4b81c8fcdb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.ownerId.FederationIdentifier[0]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</otherwise>
+		</choice>
+	</flow>
+</mule>

@@ -1,0 +1,12 @@
+%dw 2.0
+
+type auto_0ca8b35e_4eb8_4c86_8cbd_5bc88f1274d0_Input_Variables_id = {|
+  OpportunityId: String {"typeId": "Id"} | Null, 
+  AccountId: String | Null, 
+  ContactId: String | Null, 
+  Hubspot_ID__c: Number, 
+  StageName: "New" | "Initial Meeting Scheduled" | "Qualified" | "Offer Submitted" | "Negotiation" | "Contract Signed" | "Consolidated" | "Lost", 
+  RecordTypeId: String | Null, 
+  BDR_Created_By__c: String | Null
+|}
+

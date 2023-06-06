@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_58b4993d_0545_4003_a1a5_6270ec8693ce_Output_Variables_matchedCompanyIDArray = Any
+

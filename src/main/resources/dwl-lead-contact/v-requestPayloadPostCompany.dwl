@@ -7,7 +7,7 @@ output application/json
    state : payload.Hubspot_State_Region__c ,
    website  : payload.Website ,
    country  : payload.Hubspot_Country__c ,
-   name  : payload.Name ,
+   name  : payload.Company ,
    numberofemployees : payload.NumberOfEmployees ,
    industry : payload.Industry ,
 //   hubspot_owner_id : payload.OwnerId ,

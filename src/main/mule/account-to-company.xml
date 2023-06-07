@@ -159,11 +159,11 @@ output application/json
 			<when expression="#[vars.companyId != null]">
 				<logger level="INFO" doc:name="UPDATE company" doc:id="9b5297d8-a813-4acc-91b9-a50eefdc2b81" message="UPDATE company"/>
 				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="67894f83-ce26-44a0-b0ac-d84ae2bbdce6" name="update-company-in-hs"/>
-				<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="2edde53e-6caa-409a-97bc-8b3a162a66c6" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS">
+				<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="2edde53e-6caa-409a-97bc-8b3a162a66c6" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS" target="syncBackId">
 					<http:body><![CDATA[#[%dw 2.0
 output application/json
 ---
-[{"Hubspot_Company_ID__c": vars.companyId,
+[{"Hubspot_Company_ID__c": vars.companyId as String,
 	"Id":vars.inputPayload.Id
 }]]]]></http:body>
 				</http:request>
@@ -213,7 +213,7 @@ output application/json
 vars.createdCompany.companyId]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="02c7be39-9f6b-46fc-b521-17f4f2fca70f" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS">
+		<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="02c7be39-9f6b-46fc-b521-17f4f2fca70f" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS" target="syncBackId">
 			<http:body ><![CDATA[#[%dw 2.0
 output application/json
 ---

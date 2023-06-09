@@ -12,8 +12,6 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		<http:listener-connection host="${api.host}" port="${api.port}" readTimeout="${api.timeout}"/>
 	</http:listener-config>
 	<configuration-properties doc:name="Configuration properties" doc:id="4cae6e0d-7481-41fc-a713-fd91d4cbb15b" file="properties/${mule.env}.yaml" />
-	<global-property doc:name="Global Property" doc:id="95e0b076-db2f-40a0-92f1-f1f89d26e382" name="mule.key" value="DoiT123" />
-	<global-property doc:name="Global Property" doc:id="ce4d1257-e931-4b17-a559-c7a1b6fd6039" name="mule.env" value="dev" />
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2319a29a-3722-49c7-942a-eb9cf7564d0c" >
 		<salesforce:basic-connection username="${salesforce.system.username}" password="${secure::salesforce.system.password}" securityToken="${secure::salesforce.system.security_token}" url="${salesforce.system.authorization_url}" >
 			<reconnection >
@@ -21,14 +19,16 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 			</reconnection>
 		</salesforce:basic-connection>
 	</salesforce:sfdc-config>
-	<http:request-config name="HTTP_Request_configuration_hubspot_sapi" doc:name="HTTP Request configuration" doc:id="2a397dfa-fb76-45d1-a20f-606ab73564a1" basePath="${hubspot-sapi.basepath}" sendCorrelationId="ALWAYS">
+	<http:request-config name="HTTP_Request_configuration_hubspot_sapi" doc:name="HTTP Request configuration" doc:id="2a397dfa-fb76-45d1-a20f-606ab73564a1" basePath="${hubspot-sapi.basepath}" sendCorrelationId="#[p('hubspot-sapi.sendCorrelationId')]">
 		<http:request-connection host="${hubspot-sapi.host}" port="${hubspot-sapi.port}" protocol="${hubspot-sapi.protocol}" maxConnections="${hubspot-sapi.maxConnections}" connectionIdleTimeout="${hubspot-sapi.connectionIdleTimeout}" responseBufferSize="${hubspot-sapi.responseBufferSize}"/>
 	</http:request-config>
-	<http:request-config name="HTTP_Request_configuration_salesforce_sapi" doc:name="HTTP Request configuration" doc:id="c8337dda-5b02-43e4-973a-f5c049375318" basePath="${salesforce-sapi.basepath}" sendCorrelationId="ALWAYS">
+	<http:request-config name="HTTP_Request_configuration_salesforce_sapi" doc:name="HTTP Request configuration" doc:id="c8337dda-5b02-43e4-973a-f5c049375318" basePath="${salesforce-sapi.basepath}" sendCorrelationId="#[p('salesforce-sapi.sendCorrelationId')]">
 		<http:request-connection host="${salesforce-sapi.host}" port="${salesforce-sapi.port}" protocol="${salesforce-sapi.protocol}" maxConnections="${salesforce-sapi.maxConnections}" connectionIdleTimeout="${salesforce-sapi.connectionIdleTimeout}" responseBufferSize="${salesforce-sapi.responseBufferSize}"/>
 	</http:request-config>
 	<os:object-store name="Object_store" doc:name="Object store" doc:id="b628ebb2-f1db-4a27-8a37-804a948b7538" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="7b1c99de-b941-4fbb-8f7b-80038eb893c7" file="properties/${mule.env}-secure.yaml" key="${mule.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="fe76937a-69f3-460b-a2d3-606f88276ad0" name="mule.key" value="DoiT123" />
+	<global-property doc:name="Global Property" doc:id="1eb6f764-e71e-44ed-873c-0d82c33257dd" name="mule.env" value="local" />
 </mule>

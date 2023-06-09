@@ -3,15 +3,10 @@ output application/json
 ---
 {
    "associations": {
-    "associatedCompanyIds": [
-      vars.companyId
-    ],
-    "associatedVids": [
-    	vars.contactVid
-    ]
+    "associatedCompanyIds": [vars.companyId],
+    "associatedVids": 	vars.contactVid 
       
-    
-  },	
+     },	
     "properties": 
         vars.requestPayloadForDeal pluck ((value, key, index) ->{
             "value": value,

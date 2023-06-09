@@ -38,6 +38,7 @@ salesforce-sapi:
   connectionIdleTimeout: "30000"
   responseTimeout: "60000"
   baseurl: ""
+  sendCorrelationId : "ALWAYS"
 
 hubspot-sapi:
   host: "doit-hubspot-sapi.us-e2.cloudhub.io"
@@ -51,3 +52,4 @@ hubspot-sapi:
   connectionIdleTimeout: "30000"
   responseTimeout: "60000"
   baseurl: ""
+  sendCorrelationId : "ALWAYS"

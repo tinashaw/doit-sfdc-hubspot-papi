@@ -178,7 +178,7 @@ payload]]></ee:set-payload>
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
-	id : vars.id.ContactId
+	id : vars.oppAssociatedContactId
 }]]]></http:uri-params>
 		</http:request>
 		<ee:transform doc:name="Java to Json" doc:id="295aa06d-adc4-4723-8809-e47701f5f32c">

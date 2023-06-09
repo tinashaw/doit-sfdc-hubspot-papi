@@ -27,12 +27,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="31ede04f-11ec-4399-a75d-853933250def" >
 				<ee:transform doc:name="Set Error Payload" doc:id="5e1435ea-1070-4700-8b13-9d9bf036a2f3" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": error.errorMessage.typedValue default error.description
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl.error/p-error-message.dwl" />
 					</ee:message>
 				</ee:transform>
 				<logger level="ERROR" doc:name="Log Error" doc:id="007a33e3-ca8d-41ce-a691-3c8c726ef16a" message="#[payload]" />
@@ -69,7 +64,7 @@ output application/json
 		</http:request>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="d77b0dca-43d6-483f-be6d-adc683574101" />
+				<logger level="INFO" doc:name="Info Log" doc:id="d77b0dca-43d6-483f-be6d-adc683574101" message="BDR_Created_By__c Not Present"/>
 			</otherwise>
 		</choice>
 		<flow-ref doc:name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="85f58a19-8e58-42d3-8491-61841a301e46" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
@@ -115,7 +110,7 @@ output application/json
 				<choice doc:name="Choice" doc:id="65bc00fc-d9c2-4b81-ae6a-92ad727b41ba">
 					<when expression="#[vars.id.ContactId != null]">
 						<try doc:name="Try" doc:id="307d6c02-cf75-4541-a5db-b5a798811ce3">
-					<flow-ref doc:name="opp-deal-sync-contact-Sub_Flow" doc:id="0d3eb9d4-d299-48c1-846d-2600619061dc" name="opp-deal-sync-contact-Sub_Flow" />
+					<flow-ref doc:name="opp-deal-sync-opportunity-contact-role-flow" doc:id="0d3eb9d4-d299-48c1-846d-2600619061dc" name="opp-deal-sync-opportunity-contact-role-flow" />
 					<error-handler>
 						<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="de2b03ce-e2c8-45e9-a7a4-ab6591cad8be">
 							<logger level="INFO" doc:name="Info Log" doc:id="17122f51-f9d3-4cf1-a307-c9c9f68417ac" message='#["ERROR": "Error related to associated Contact of Opportunity "]' />
@@ -139,7 +134,7 @@ output application/json
 					<http:body ><![CDATA[#[vars.desirePayloadForCreate]]]></http:body>
 				</http:request>
 				<logger level="INFO" doc:name="Info Log" doc:id="7b0c9c00-399f-4828-ba40-0136169fbc67" message="Deal Created in Hubspot with dealId #[vars.createdResponse.dealId]"/>
-				<ee:transform doc:name="Transform Message" doc:id="ddb57b8f-71fc-4256-93df-7b750b552705">
+				<ee:transform doc:name="Set syncBack payload" doc:id="ddb57b8f-71fc-4256-93df-7b750b552705">
 					<ee:message>
 						<ee:set-payload resource="dwl/-p-payload-created-reponse.dwl" />
 					</ee:message>
@@ -190,10 +185,42 @@ output application/json
 		<logger level="INFO" doc:name="Log Completed" doc:id="e44cb56e-8693-49b1-8018-38cbd62362f0" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-sf-to-deal-hs-get-companyId-by-accountId-Flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	
 </flow>
+	<sub-flow name="opp-deal-sync-opportunity-contact-role-flow" doc:id="b33945b1-d1a2-4b8f-b850-037a3e766aec" >
+		<http:request method="GET" doc:name="Request to get all contact of opportunity" doc:id="ceda4212-0719-482a-beb7-a631807541e8" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="oppAssociateContactIds" targetValue="#[payload.ContactId]" sendCorrelationId="ALWAYS" responseTimeout="-1">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT ContactId FROM OpportunityContactRole WHERE OpportunityId = '" ++ vars.id.OpportunityId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="6f6ee511-47e9-48b7-af02-52665e64142b" collection="#[vars.oppAssociateContactIds]" target="oppAssociatedContactVids">
+			<ee:transform doc:name="Set oppAssociatedContactId" doc:id="db6e60db-816b-4465-b608-945bba6a45e0" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="oppAssociatedContactId" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Ref opp-deal-sync-contact-Sub_Flow" doc:id="152f74f7-56f8-4acf-8f93-afc8d521f927" name="opp-deal-sync-contact-Sub_Flow"/>
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="cfff8aa2-01bf-4ec2-9679-34394c4a5413" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="contactVid" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.oppAssociatedContactVids.payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
 	<sub-flow name="opp-deal-sync-contact-Sub_Flow" doc:id="6e1c1a47-e7e4-41d4-ba98-28870b4cb620" >
 		<logger level="INFO" doc:name="Log Started" doc:id="49b8e176-ee94-4017-bdd4-4fb5330119dd" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-contact-Sub_Flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<flow-ref doc:name="Flow Reference sf-contactId-to-hs-contact-vid-Flow" doc:id="3b427f01-054a-44c0-a315-997c0b24bd3c" name="sf-contactId-to-hs-contact-vid-Flow"/>
-		<ee:transform doc:name="Set contactId" doc:id="6a8917e1-d4d2-4189-945e-62043ef5f5da" >
+<!-- [STUDIO:"Set contactId"]		<ee:transform doc:name="Set contactId" doc:id="6a8917e1-d4d2-4189-945e-62043ef5f5da" >
 			<ee:message >
 			</ee:message>
 			<ee:variables >
@@ -201,7 +228,7 @@ output application/json
 				<ee:set-variable resource="dwl/-v-set-contactId.dwl" variableName="contactId" />
 			
 </ee:variables>
-		</ee:transform>
+		</ee:transform> [STUDIO] -->
 		<logger level="INFO" doc:name="Info Log" doc:id="0a455ba1-8b9a-4d66-b6fb-4d75998cde46" message="Associated Contact Found with Vid  #[vars.contactId]" />
 		<logger level="INFO" doc:name="Log Completed" doc:id="c5bda239-4df0-4a51-8169-3420bbbe4c54" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-contact-Sub_Flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	

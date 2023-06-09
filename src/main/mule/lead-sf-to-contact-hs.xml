@@ -28,12 +28,7 @@ http://www.mulesoft.org/schema/mule/module-logging http://www.mulesoft.org/schem
 			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="be5759f5-207f-4c98-9ce8-c4999bf4983b" >
 				<ee:transform doc:name="Set Error Payload" doc:id="e2e819eb-04f7-4a22-b6ad-b6f884ac209a" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": error.errorMessage.typedValue default error.description
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl.error/p-error-message.dwl" />
 					</ee:message>
 				</ee:transform>
 				<logger level="ERROR" doc:name="Log Error" doc:id="350b102d-69d6-4102-b0ec-70d4068d906e" message="#[payload]" />

@@ -1,0 +1,18 @@
+%dw 2.0
+
+type auto_b33945b1_d1a2_4b8f_b850_037a3e766aec_Output_Variables_oppAssociatedContactVids = Array<org_mule_runtime_api_message_Message>
+type org_mule_runtime_api_message_Message = {|
+  payload: Any, 
+  attributes: org_mule_extension_http_api_HttpResponseAttributes
+|} {"typeId": "org.mule.runtime.api.message.Message"}
+type org_mule_extension_http_api_HttpResponseAttributes = {|
+  statusCode: Number, 
+  reasonPhrase: String, 
+  headers: { _?: String }
+|} {"typeAlias": "HttpResponseAttributes",
+"typeId": "org.mule.extension.http.api.HttpResponseAttributes"}
+
+
+
+
+

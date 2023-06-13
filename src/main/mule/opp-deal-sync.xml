@@ -263,14 +263,6 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 		<http:request method="PUT" doc:name="Request to associate deal" doc:id="e1179b34-b470-41f1-a72e-21be426e0470" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/associate">
 			<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
 		</http:request>
-<!-- [STUDIO:"Request to associate deal"]		<http:request method="PUT" doc:name="Request to associate deal" doc:id="b83033e1-3c55-4258-953f-ce9f8154fd7e" url="https://api.hubapi.com/crm-associations/v1/associations">
-					<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
-					<http:headers><![CDATA[#[output application/java
-&#45;&#45;-
-{
-	Authorization : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
-}]]]></http:headers>
-				</http:request> [STUDIO] -->
 		<logger level="INFO" doc:name="Info Log" doc:id="8aabe919-63a9-43a6-abbe-b4925e77b13d" message="Deal with dealId #[vars.dealId]  Associated with Contact #[vars.contactVid]" />
 	</flow>
 	<flow name="opp-deal-sync-oppContactRole-deassociation-flow" doc:id="99350759-b742-4dd2-8f12-0237807c640d" >
@@ -302,14 +294,6 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 <http:request method="PUT" doc:name="Request to deassociate deal" doc:id="7e9f86fe-d2bc-4814-98ab-52be0c43d131" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/deassociate">
 			<http:body ><![CDATA[#[vars.mappedPayload]]]></http:body>
 		</http:request>
-		<!-- [STUDIO:"Request to deassociate deal"]		<http:request method="PUT" doc:name="Request to deassociate deal" doc:id="a071b053-5755-444e-b12b-73d5b2e5b6d9" url="https://api.hubapi.com/crm-associations/v1/associations/delete">
-			<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
-			<http:headers><![CDATA[#[output application/java
-&#45;&#45;-
-{
-	Authorization : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
-}]]]></http:headers>
-		</http:request> [STUDIO] -->
 		<logger level="INFO" doc:name="Info Log" doc:id="aa28e707-ff80-4c6d-aa88-1a3405ea5668" message="Deal with dealId #[vars.dealId]  Deassociated with Contact #[vars.contactVid]" />
 	</flow>
 </mule>

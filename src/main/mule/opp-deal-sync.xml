@@ -233,4 +233,83 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 		<logger level="INFO" doc:name="Log Completed" doc:id="c5bda239-4df0-4a51-8169-3420bbbe4c54" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-contact-Sub_Flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	
 </sub-flow>
+	<flow name="opp-deal-sync-oppContactRole-association-flow" doc:id="b2adaeb5-9389-4e7b-b0ae-f94e4f7ad449" >
+		<salesforce:modified-object-listener objectType="OpportunityContactRole" doc:name="On Modified OpportunityContactRole" doc:id="2ff1db39-aaee-449a-976d-9dd9ce60556d" config-ref="Salesforce_Config" since="${salesforce.since}">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="cc50b407-1355-4f88-b59e-b1c4ceeac1b2" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_ID__c FROM Opportunity WHERE Id = '" ++ payload.OpportunityId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<http:request method="GET" doc:name="Request to get contact vid" doc:id="04872838-a6c8-4710-9ea3-c1895d70bcf9" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_Contact_ID__c FROM Contact WHERE Id = '"++ payload.ContactId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Mapping" doc:id="8bbe5bce-94ff-47fa-8c5c-97f11c2611af">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl/var-mappedPayload-deal-associate.dwl" variableName="mappedPayload" />
+			</ee:variables>
+		</ee:transform>
+		<http:request method="PUT" doc:name="Request to associate deal" doc:id="e1179b34-b470-41f1-a72e-21be426e0470" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/associate">
+			<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
+		</http:request>
+<!-- [STUDIO:"Request to associate deal"]		<http:request method="PUT" doc:name="Request to associate deal" doc:id="b83033e1-3c55-4258-953f-ce9f8154fd7e" url="https://api.hubapi.com/crm-associations/v1/associations">
+					<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
+					<http:headers><![CDATA[#[output application/java
+&#45;&#45;-
+{
+	Authorization : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
+}]]]></http:headers>
+				</http:request> [STUDIO] -->
+		<logger level="INFO" doc:name="Info Log" doc:id="8aabe919-63a9-43a6-abbe-b4925e77b13d" message="Deal with dealId #[vars.dealId]  Associated with Contact #[vars.contactVid]" />
+	</flow>
+	<flow name="opp-deal-sync-oppContactRole-deassociation-flow" doc:id="99350759-b742-4dd2-8f12-0237807c640d" >
+		<salesforce:deleted-object-listener objectType="OpportunityContactRole" doc:name="On Deleted OpportunityContactRole" doc:id="7da4168c-dbcd-4e62-943a-75f40f2a3df7" config-ref="Salesforce_Config" since="${salesforce.since}">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:deleted-object-listener>
+		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="b36c9590-0ae2-4b1b-b155-88b677f8de22" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]" >
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_ID__c FROM Opportunity WHERE Id = '" ++ payload.OpportunityId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<http:request method="GET" doc:name="Request to get contact vid" doc:id="3f101ee6-54a9-4632-9c78-5e131e0a6c74" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]" >
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_Contact_ID__c FROM Contact WHERE Id = '"++ payload.ContactId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Mapping" doc:id="7ed99f60-a693-4fd9-9b92-cdd0ceec1909" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable resource="dwl/var-mappedPayload-deal-deassociate.dwl" variableName="mappedPayload" />
+			</ee:variables>
+		</ee:transform>
+<http:request method="PUT" doc:name="Request to deassociate deal" doc:id="7e9f86fe-d2bc-4814-98ab-52be0c43d131" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/deassociate">
+			<http:body ><![CDATA[#[vars.mappedPayload]]]></http:body>
+		</http:request>
+		<!-- [STUDIO:"Request to deassociate deal"]		<http:request method="PUT" doc:name="Request to deassociate deal" doc:id="a071b053-5755-444e-b12b-73d5b2e5b6d9" url="https://api.hubapi.com/crm-associations/v1/associations/delete">
+			<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+&#45;&#45;-
+{
+	Authorization : "Bearer pat-na1-9b2d3e73-5a06-41a7-acf9-28afb4e45d8d"
+}]]]></http:headers>
+		</http:request> [STUDIO] -->
+		<logger level="INFO" doc:name="Info Log" doc:id="aa28e707-ff80-4c6d-aa88-1a3405ea5668" message="Deal with dealId #[vars.dealId]  Deassociated with Contact #[vars.contactVid]" />
+	</flow>
 </mule>

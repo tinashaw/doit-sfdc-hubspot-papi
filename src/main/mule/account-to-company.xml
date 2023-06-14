@@ -57,26 +57,33 @@ payload]]></ee:set-variable>
 
 </ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
-		<choice doc:name="Choice" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897" >
+		<choice doc:name="Choice" doc:id="d96f2db9-2191-4545-a298-fe75e6e984fc" >
+			<when expression="#[!isEmpty(payload.Company_Domain__c)]">
+				<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+				<choice doc:name="Choice" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897">
 			<when expression="#[vars.inputPayload.Hubspot_Company_ID__c != null]">
-				<logger level="INFO" doc:name="Update Company" doc:id="58d12bb2-7ec1-41e7-97f8-c23a2b2413f7" message="Update Company"/>
+				<logger level="INFO" doc:name="Update Company" doc:id="58d12bb2-7ec1-41e7-97f8-c23a2b2413f7" message="Update Company" />
 				<ee:transform doc:name="Set CompanyId" doc:id="5ae6d867-01c3-4aa4-bc80-78cae3295a46">
 					<ee:message>
 					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
+					<ee:variables>
+						<ee:set-variable variableName="companyId"><![CDATA[%dw 2.0
 output application/json
 ---
 vars.inputPayload.Hubspot_Company_ID__c]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="1631ccfd-decc-477b-827f-86d73c483971" name="update-company-in-hs"/>
+				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="1631ccfd-decc-477b-827f-86d73c483971" name="update-company-in-hs" />
 			</when>
-			<otherwise >
-				<flow-ref doc:name="Flow Reference company-check-subflow" doc:id="3ee19c39-7918-4b27-9bc1-02e618a47a9d" name="company-check-subflow"/>
+			<otherwise>
+				<flow-ref doc:name="Flow Reference company-check-subflow" doc:id="3ee19c39-7918-4b27-9bc1-02e618a47a9d" name="company-check-subflow" />
 			
 </otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log Company_Domain__c = null" doc:id="d533d1f1-89ac-4a4b-904a-7e5bd8333ce7" message="Company_Domain__c is Empty"/>
+			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Log Completed" doc:id="e0418c66-e798-4088-a37a-f41af3625898" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Account to HS Company flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	
@@ -144,7 +151,7 @@ output application/json
 					<http:query-params><![CDATA[#[output application/java
 ---
 {
-	domain : payload.Company_Domain__c
+	domain : payload.Company_Domain__c default ""
 }]]]></http:query-params>
 				</http:request>
 		<ee:transform doc:name="Find CompanyId from HS on the basis of lifecycle stage and last modified date" doc:id="bbd6aa5d-3a41-4b7f-bcb2-9735b8d9c491" >

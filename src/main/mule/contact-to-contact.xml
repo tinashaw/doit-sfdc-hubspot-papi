@@ -77,9 +77,16 @@ payload.AccountId]]></ee:set-variable>
 </ee:variables>
 		</ee:transform>
 <flow-ref doc:name="Flow Ref to fetch Hubspot CompanyId" doc:id="8ac1f8c2-bb33-4aa2-a5e6-0e07c0a4b99f" target="companyId" name="get-salesforce-account-data" targetValue="#[payload.companyId]" />
-		<logger level="INFO" doc:name="Log companyId" doc:id="c9151f4c-e04a-4040-96d3-ff82f3d10713" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
-		<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
-		<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="771219d4-6a83-4e33-a33b-88eb34bff62b" name="contact-validation-subFlow" />
+		<choice doc:name="Choice" doc:id="80873e66-eac3-4ace-be1d-375692a75487" >
+			<when expression="#[!isEmpty(vars.companyId)]">
+				<logger level="INFO" doc:name="Log companyId" doc:id="c9151f4c-e04a-4040-96d3-ff82f3d10713" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
+				<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+				<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="771219d4-6a83-4e33-a33b-88eb34bff62b" name="contact-validation-subFlow" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log companyId" doc:id="29dfc994-1279-426d-9b47-0ef151d1017a" message='#["Hubspot CompanyId: " ++ vars.companyId default null]'/>
+			</otherwise>
+		</choice>
 	
 
 </flow>

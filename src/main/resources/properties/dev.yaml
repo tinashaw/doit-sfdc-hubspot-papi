@@ -39,6 +39,9 @@ salesforce-sapi:
   responseTimeout: "60000"
   baseurl: ""
   sendCorrelationId : "ALWAYS"
+  reconnection:
+    frequency: "2000"
+    attempt: "5"
 
 hubspot-sapi:
   host: "doit-hubspot-sapi.us-e2.cloudhub.io"
@@ -53,3 +56,6 @@ hubspot-sapi:
   responseTimeout: "60000"
   baseurl: ""
   sendCorrelationId : "ALWAYS"
+  reconnection:
+    frequency: "2000"
+    attempt: "5"

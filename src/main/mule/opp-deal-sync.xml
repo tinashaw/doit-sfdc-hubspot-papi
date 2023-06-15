@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 				<flow-ref doc:name="Flow Ref to sf-opp-to-hs-deal-flow" doc:id="3d683853-c144-4560-b9d6-9ea317810274" name="sf-opp-to-hs-deal-flow" />
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="eabb13c2-d573-4018-8842-ccf5805c5960" message='"No Appropriate Event"' />
+				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="eabb13c2-d573-4018-8842-ccf5805c5960" message='"Last Updated by Integration User"' />
 			</otherwise>
 		</choice>
 		<error-handler >
@@ -46,7 +46,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			
 </ee:variables>
 		</ee:transform>
-		<http:request method="GET" doc:name="Request for RecordTypeName" doc:id="6052f98c-8510-4d40-8d48-2371bb667596" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/getRecordTypeName/{recordTypeId}" target="recordTypeName" responseTimeout="-1" targetValue="#[payload[0].Name]">
+		<http:request method="GET" doc:name="Request for RecordTypeName" doc:id="6052f98c-8510-4d40-8d48-2371bb667596" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/getRecordTypeName/{recordTypeId}" target="recordTypeName" responseTimeout="-1" targetValue="#[payload[0].Name]" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
@@ -55,7 +55,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		</http:request>
 		<choice doc:name="Is BDR Name ?" doc:id="4cf049b9-9d98-4947-9886-7333252bdcd5">
 			<when expression="#[vars.id.BDR_Created_By__c != null]">
-				<http:request method="GET" doc:name="Request to get BDR Name" doc:id="2c3c3a66-cfd6-4865-aa64-4621b9995cda" config-ref="HTTP_Request_configuration_salesforce_sapi" target="nameBDR_Created_By__c_" path="/user/id" targetValue="#[payload[0].Name]" responseTimeout="-1">
+				<http:request method="GET" doc:name="Request to get BDR Name" doc:id="2c3c3a66-cfd6-4865-aa64-4621b9995cda" config-ref="HTTP_Request_configuration_salesforce_sapi" target="nameBDR_Created_By__c_" path="/user/id" targetValue="#[payload[0].Name]" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<http:query-params><![CDATA[#[output application/java
 ---
 {
@@ -78,7 +78,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		<choice doc:name="Is Hubspot_ID__c ?" doc:id="2d56a0a0-42fc-4fe3-bcde-f9872f84038e">
 				<when expression="#[vars.id.Hubspot_ID__c != null]">
 				<try doc:name="Try" doc:id="7511aa32-648c-47a0-9b2f-fff8caa42b2c">
-			<http:request method="GET" doc:name="Get Deal" doc:id="c802cffb-0d6f-422b-85d5-e6a030267d5d" path="/deal/{dealId}" config-ref="HTTP_Request_configuration_hubspot_sapi" responseTimeout="-1">
+			<http:request method="GET" doc:name="Get Deal" doc:id="c802cffb-0d6f-422b-85d5-e6a030267d5d" path="/deal/{dealId}" config-ref="HTTP_Request_configuration_hubspot_sapi" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<http:uri-params><![CDATA[#[output application/java
 ---
 {
@@ -124,7 +124,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 						<ee:set-variable resource="dwl/-v-desirePayloadForUpdate.dwl" variableName="desirePayloadForUpdate" />
 					</ee:variables>
 				</ee:transform>
-		<http:request method="PUT" doc:name="Request to Update Deal" doc:id="2ef3e276-0eb8-4f2d-b221-bfb7b7b9af50" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/update/{dealId}" responseTimeout="-1">
+		<http:request method="PUT" doc:name="Request to Update Deal" doc:id="2ef3e276-0eb8-4f2d-b221-bfb7b7b9af50" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/update/{dealId}" responseTimeout="-1" sendCorrelationId="ALWAYS">
 					<reconnect count="5" />
 					<http:body><![CDATA[#[vars.desirePayloadForUpdate]]]></http:body>
 					<http:uri-params><![CDATA[#[output application/java
@@ -160,7 +160,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 			
 </ee:variables>
 		</ee:transform>
-		<http:request method="POST" doc:name="Request to Create Deal" doc:id="f8119788-397c-41c3-8f7c-f35ed8c80919" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/create" target="createdResponse">
+		<http:request method="POST" doc:name="Request to Create Deal" doc:id="f8119788-397c-41c3-8f7c-f35ed8c80919" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/create" target="createdResponse" sendCorrelationId="ALWAYS">
 					<http:body><![CDATA[#[vars.desirePayloadForCreate]]]></http:body>
 				</http:request>
 		<logger level="INFO" doc:name="Info Log" doc:id="7b0c9c00-399f-4828-ba40-0136169fbc67" message="Deal Created in Hubspot with dealId #[vars.createdResponse.dealId]" />
@@ -175,7 +175,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 						<ee:set-variable resource="dwl/-v-updateDealId.dwl" variableName="updateDealId" />
 					</ee:variables>
 				</ee:transform>
-		<http:request method="POST" doc:name="Request to Update DealId on SF" doc:id="8154d093-b55a-4721-837b-b35dd6737854" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/update">
+		<http:request method="POST" doc:name="Request to Update DealId on SF" doc:id="8154d093-b55a-4721-837b-b35dd6737854" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/update" sendCorrelationId="ALWAYS">
 					<http:body><![CDATA[#[vars.updateDealId]]]></http:body>
 				</http:request>
 		<logger level="INFO" doc:name="Info Log" doc:id="b1c0d6dd-6e4d-4176-8f78-41a1c2f8c490" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"Deal Id" : vars.createdResponse.dealId,&#10;	"Deal Name": vars.createdResponse.properties.dealname.value,&#10;	"Message": "Deal Successfully Created and Synced-Back"&#10;}]' />
@@ -249,14 +249,14 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
 		<logger level="INFO" doc:name="Log Started" doc:id="d68ac069-ea8f-425f-86ef-d495a9a10de0" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-oppContactRole-association-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="cc50b407-1355-4f88-b59e-b1c4ceeac1b2" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]">
+		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="cc50b407-1355-4f88-b59e-b1c4ceeac1b2" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]" sendCorrelationId="ALWAYS">
 			<http:query-params><![CDATA[#[output application/java
 ---
 {
 	querytobeexecuted : "SELECT Hubspot_ID__c FROM Opportunity WHERE Id = '" ++ payload.OpportunityId ++ "'"
 }]]]></http:query-params>
 		</http:request>
-		<http:request method="GET" doc:name="Request to get contact vid" doc:id="04872838-a6c8-4710-9ea3-c1895d70bcf9" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]">
+		<http:request method="GET" doc:name="Request to get contact vid" doc:id="04872838-a6c8-4710-9ea3-c1895d70bcf9" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]" sendCorrelationId="ALWAYS">
 			<http:query-params><![CDATA[#[output application/java
 ---
 {
@@ -270,7 +270,7 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 				<ee:set-variable resource="dwl/var-mappedPayload-deal-associate.dwl" variableName="mappedPayload" />
 			</ee:variables>
 		</ee:transform>
-		<http:request method="PUT" doc:name="Request to associate deal" doc:id="e1179b34-b470-41f1-a72e-21be426e0470" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/associate">
+		<http:request method="PUT" doc:name="Request to associate deal" doc:id="e1179b34-b470-41f1-a72e-21be426e0470" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/associate" sendCorrelationId="ALWAYS">
 			<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
 		</http:request>
 		<logger level="INFO" doc:name="Info Log" doc:id="8aabe919-63a9-43a6-abbe-b4925e77b13d" message="Deal with dealId #[vars.dealId]  Associated with Contact #[vars.contactVid]" />
@@ -283,14 +283,14 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 			</scheduling-strategy>
 		</salesforce:deleted-object-listener>
 		<logger level="INFO" doc:name="Log Started" doc:id="4d79b11a-6966-4065-b354-14edd758341b" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-oppContactRole-deassociation-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="b36c9590-0ae2-4b1b-b155-88b677f8de22" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]" >
+		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="b36c9590-0ae2-4b1b-b155-88b677f8de22" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]" sendCorrelationId="ALWAYS">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
 	querytobeexecuted : "SELECT Hubspot_ID__c FROM Opportunity WHERE Id = '" ++ payload.OpportunityId ++ "'"
 }]]]></http:query-params>
 		</http:request>
-		<http:request method="GET" doc:name="Request to get contact vid" doc:id="3f101ee6-54a9-4632-9c78-5e131e0a6c74" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]" >
+		<http:request method="GET" doc:name="Request to get contact vid" doc:id="3f101ee6-54a9-4632-9c78-5e131e0a6c74" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]" sendCorrelationId="ALWAYS">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
@@ -303,7 +303,7 @@ vars.oppAssociatedContactVids.payload]]></ee:set-variable>
 				<ee:set-variable resource="dwl/var-mappedPayload-deal-deassociate.dwl" variableName="mappedPayload" />
 			</ee:variables>
 		</ee:transform>
-<http:request method="PUT" doc:name="Request to deassociate deal" doc:id="7e9f86fe-d2bc-4814-98ab-52be0c43d131" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/deassociate">
+<http:request method="PUT" doc:name="Request to deassociate deal" doc:id="7e9f86fe-d2bc-4814-98ab-52be0c43d131" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/deassociate" sendCorrelationId="ALWAYS">
 			<http:body ><![CDATA[#[vars.mappedPayload]]]></http:body>
 		</http:request>
 		<logger level="INFO" doc:name="Info Log" doc:id="aa28e707-ff80-4c6d-aa88-1a3405ea5668" message="Deal with dealId #[vars.dealId]  Deassociated with Contact #[vars.contactVid]" />

@@ -168,7 +168,7 @@ payload.OwnerId]]></ee:set-variable>
 				<ee:set-variable resource="dwl-lead-contact/v-update-desire-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 			</ee:variables>
 		</ee:transform>
-		<http:request method="POST" doc:name="Request to update company" doc:id="be559124-1bbb-4f74-b650-343acdc67b8c" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" target="hsUpdatedCompanyData" >
+		<http:request method="POST" doc:name="Request to update company" doc:id="be559124-1bbb-4f74-b650-343acdc67b8c" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" target="hsUpdatedCompanyData" sendCorrelationId="ALWAYS">
 			<http:body ><![CDATA[#[vars.requestPayloadPostCompany]]]></http:body>
 			<http:query-params ><![CDATA[#[output application/java
 ---
@@ -181,7 +181,7 @@ payload.OwnerId]]></ee:set-variable>
 	</sub-flow>
 	<flow name="lead-sf-to-contact-hs-fetch-company-flow" doc:id="9d14cce2-8c89-4ac8-8014-0202d18d80fc" >
 		<logger level="INFO" doc:name="Log Started" doc:id="cf4623d9-8921-4c82-937e-26c3a4d7c3a6" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-fetch-company-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]"/>
-		<http:request method="POST" doc:name="Lookup for companyId" doc:id="a3e276c6-6a79-4924-b6b7-8a4c3a3a4fe4" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/domain" target="getDomainFromHs" responseTimeout="-1">
+		<http:request method="POST" doc:name="Lookup for companyId" doc:id="a3e276c6-6a79-4924-b6b7-8a4c3a3a4fe4" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/domain" target="getDomainFromHs" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<reconnect count="5" />
 			<http:body><![CDATA[#[%dw 2.0
 output application/json
@@ -218,7 +218,7 @@ output application/json
 		</ee:transform>
 		<choice doc:name="Choice" doc:id="002974d7-3673-4059-816e-461f27a98658">
 			<when expression="#[sizeOf(vars.matchedCompanyIDArray) == 1]">
-				<http:request method="GET" doc:name="Request to Get  Company Details" doc:id="e76f59d6-3801-44eb-b756-8e201977a1f0" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/{companyid}" target="hsCompanyData">
+				<http:request method="GET" doc:name="Request to Get  Company Details" doc:id="e76f59d6-3801-44eb-b756-8e201977a1f0" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/{companyid}" target="hsCompanyData" sendCorrelationId="ALWAYS">
 					<http:uri-params><![CDATA[#[output application/java
 ---
 {
@@ -265,7 +265,7 @@ payload.OwnerId]]></ee:set-variable>
 						<ee:set-variable resource="dwl-lead-contact/v-update-desire-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 					</ee:variables>
 				</ee:transform>
-				<http:request method="POST" doc:name="Request to create company" doc:id="cebd5255-0ce1-4bf3-9f7b-5eab6225dc6a" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="hsCompanyData">
+				<http:request method="POST" doc:name="Request to create company" doc:id="cebd5255-0ce1-4bf3-9f7b-5eab6225dc6a" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="hsCompanyData" sendCorrelationId="ALWAYS">
 					<http:body><![CDATA[#[vars.requestPayloadPostCompany]]]></http:body>
 				</http:request>
 				<ee:transform doc:name="companyId" doc:id="cc5f2298-e6de-47ac-af44-ef87cd8644ad">

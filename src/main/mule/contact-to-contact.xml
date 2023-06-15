@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 				<fixed-frequency />
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="4c7e99b7-5aae-483e-baad-588f824ab237">
+		<choice doc:name="Is Updated by Integration User?" doc:id="4c7e99b7-5aae-483e-baad-588f824ab237">
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]">
 				<flow-ref doc:name="Flow Ref to sf-contact-sync-to-hubspotFlow" doc:id="375305bf-b2e6-4b9c-8f6c-194d3a3b7fad" name="sf-contact-sync-to-hubspotFlow" />
 				<logger level="INFO" doc:name="Log Completed" doc:id="df9d8f0d-27c0-4463-a24a-bf9e422a05fd" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
@@ -49,7 +49,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 </ee:variables>
 		</ee:transform>
 <flow-ref doc:name="Flow Ref to fetch Hubspot CompanyId" doc:id="8ac1f8c2-bb33-4aa2-a5e6-0e07c0a4b99f" target="companyId" name="get-salesforce-account-data" targetValue="#[payload.companyId]" />
-		<choice doc:name="Choice" doc:id="80873e66-eac3-4ace-be1d-375692a75487" >
+		<choice doc:name="Is CompanyId empty ?" doc:id="80873e66-eac3-4ace-be1d-375692a75487" >
 			<when expression="#[!isEmpty(vars.companyId)]">
 				<logger level="INFO" doc:name="Log companyId" doc:id="c9151f4c-e04a-4040-96d3-ff82f3d10713" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
 				<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
@@ -168,7 +168,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 				<ee:set-payload resource="dwl/contact/msg-contact-details.dwl" />
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="dc09141e-1779-496d-a9fd-c50d916c8d3f" >
+		<choice doc:name="Is HS CompanyId present ?" doc:id="dc09141e-1779-496d-a9fd-c50d916c8d3f" >
 			<when expression="#[payload.Hubspot_Contact_ID__c != null]" >
 				<ee:transform doc:name="Set contactId" doc:id="ec9471eb-9074-4ce0-845b-b7c4a97ecbb2" >
 					<ee:message >

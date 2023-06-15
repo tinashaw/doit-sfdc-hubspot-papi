@@ -8,7 +8,7 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 	<flow name="fetch-ownerid-for-hubspot-to-salesforce" doc:id="e9a11f22-22f9-4179-92a7-3819f0fc1453" >
-		<http:request method="GET" doc:name="Get hubspot owner by id" doc:id="4460924a-72e6-4a27-920c-61fa1382ab96" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/{id}" responseTimeout="60000" target="ownerId" >
+		<http:request method="GET" doc:name="Get hubspot owner by id" doc:id="4460924a-72e6-4a27-920c-61fa1382ab96" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/{id}" responseTimeout="60000" target="ownerId" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
@@ -21,7 +21,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 				<ee:set-variable resource="dwl/owner/var-set-email.dwl" variableName="email" />
 			</ee:variables>
 		</ee:transform>
-		<http:request method="GET" doc:name="Request SF to get user details" doc:id="354ed8fa-ca2a-4571-8898-ba398281707a" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/email" responseTimeout="60000" >
+		<http:request method="GET" doc:name="Request SF to get user details" doc:id="354ed8fa-ca2a-4571-8898-ba398281707a" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/email" responseTimeout="60000" sendCorrelationId="ALWAYS">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
@@ -35,7 +35,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		</ee:transform>
 	</flow>
 	<flow name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="2a3ddd07-14c8-4673-b844-c27e18a0f486" >
-		<http:request method="GET" doc:name="Request SF to get user details" doc:id="bfc8a150-d226-44db-bb0f-bb624f5daee1" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/id" target="ownerId" responseTimeout="60000">
+		<http:request method="GET" doc:name="Request SF to get user details" doc:id="bfc8a150-d226-44db-bb0f-bb624f5daee1" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/id" target="ownerId" responseTimeout="60000" sendCorrelationId="ALWAYS">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
@@ -51,7 +51,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 						<ee:set-variable resource="dwl/owner/var-set-federationidentifier.dwl" variableName="email" />
 			</ee:variables>
 		</ee:transform>
-				<http:request method="GET" doc:name="Get hubspot owner by email" doc:id="45f7573b-0434-4561-a5e1-a40014af50dd" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/email" responseTimeout="#[p('hubspot-sapi.responseTimeout')]">
+				<http:request method="GET" doc:name="Get hubspot owner by email" doc:id="45f7573b-0434-4561-a5e1-a40014af50dd" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/email" responseTimeout="#[p('hubspot-sapi.responseTimeout')]" sendCorrelationId="ALWAYS">
 					<http:query-params ><![CDATA[#[output application/java
 ---
 {

@@ -20,10 +20,18 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 		</salesforce:basic-connection>
 	</salesforce:sfdc-config>
 	<http:request-config name="HTTP_Request_configuration_hubspot_sapi" doc:name="HTTP Request configuration" doc:id="2a397dfa-fb76-45d1-a20f-606ab73564a1" basePath="${hubspot-sapi.basepath}" sendCorrelationId="#[p('hubspot-sapi.sendCorrelationId')]">
-		<http:request-connection host="${hubspot-sapi.host}" port="${hubspot-sapi.port}" protocol="${hubspot-sapi.protocol}" maxConnections="${hubspot-sapi.maxConnections}" connectionIdleTimeout="${hubspot-sapi.connectionIdleTimeout}" responseBufferSize="${hubspot-sapi.responseBufferSize}"/>
+		<http:request-connection host="${hubspot-sapi.host}" port="${hubspot-sapi.port}" protocol="${hubspot-sapi.protocol}" maxConnections="${hubspot-sapi.maxConnections}" connectionIdleTimeout="${hubspot-sapi.connectionIdleTimeout}" responseBufferSize="${hubspot-sapi.responseBufferSize}">
+			<reconnection >
+				<reconnect frequency="${hubspot-sapi.reconnection.frequency}" count="${hubspot-sapi.reconnection.attempt}" />
+			</reconnection>
+		</http:request-connection>
 	</http:request-config>
 	<http:request-config name="HTTP_Request_configuration_salesforce_sapi" doc:name="HTTP Request configuration" doc:id="c8337dda-5b02-43e4-973a-f5c049375318" basePath="${salesforce-sapi.basepath}" sendCorrelationId="#[p('salesforce-sapi.sendCorrelationId')]">
-		<http:request-connection host="${salesforce-sapi.host}" port="${salesforce-sapi.port}" protocol="${salesforce-sapi.protocol}" maxConnections="${salesforce-sapi.maxConnections}" connectionIdleTimeout="${salesforce-sapi.connectionIdleTimeout}" responseBufferSize="${salesforce-sapi.responseBufferSize}"/>
+		<http:request-connection host="${salesforce-sapi.host}" port="${salesforce-sapi.port}" protocol="${salesforce-sapi.protocol}" maxConnections="${salesforce-sapi.maxConnections}" connectionIdleTimeout="${salesforce-sapi.connectionIdleTimeout}" responseBufferSize="${salesforce-sapi.responseBufferSize}">
+			<reconnection >
+				<reconnect frequency="${salesforce-sapi.reconnection.frequency}" count="${salesforce-sapi.reconnection.attempt}" />
+			</reconnection>
+		</http:request-connection>
 	</http:request-config>
 	<os:object-store name="Object_store" doc:name="Object store" doc:id="b628ebb2-f1db-4a27-8a37-804a948b7538" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="7b1c99de-b941-4fbb-8f7b-80038eb893c7" file="properties/${mule.env}-secure.yaml" key="${mule.key}" >

@@ -80,7 +80,7 @@ payload.AccountId]]></ee:set-variable>
 		<choice doc:name="Choice" doc:id="80873e66-eac3-4ace-be1d-375692a75487" >
 			<when expression="#[!isEmpty(vars.companyId)]">
 				<logger level="INFO" doc:name="Log companyId" doc:id="c9151f4c-e04a-4040-96d3-ff82f3d10713" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
-				<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+				<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
 				<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="771219d4-6a83-4e33-a33b-88eb34bff62b" name="contact-validation-subFlow" />
 			</when>
 			<otherwise >
@@ -363,6 +363,6 @@ output application/json
 payload[0]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="Flow Ref to fetch Hubspot Company Id" doc:id="2aeb6574-ff17-483b-8052-00c4c41661b3" name="sfdc-account-to-company-hubspotFlow"/>
+		<flow-ref doc:name="Flow Ref to fetch Hubspot Company Id" doc:id="2aeb6574-ff17-483b-8052-00c4c41661b3" name="sfdc-account-to-company-hubspot-flow"/>
 	</flow>
 </mule>

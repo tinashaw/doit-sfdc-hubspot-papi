@@ -8,15 +8,15 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
-	<flow name="account-to-companyFlow" doc:id="52d145fd-6bc3-42b3-8dc4-c83c5bb78067" >
-		<salesforce:modified-object-listener objectType="Account" doc:name="On Modified Object" doc:id="8bc23034-e912-443e-851c-1b2d2abe6f4f" config-ref="Salesforce_Config" since="${salesforce.since}">
+	<flow name="account-to-company-flow" doc:id="52d145fd-6bc3-42b3-8dc4-c83c5bb78067" >
+		<salesforce:modified-object-listener objectType="Account" doc:name="On Modified Object Account" doc:id="8bc23034-e912-443e-851c-1b2d2abe6f4f" config-ref="Salesforce_Config" since="${salesforce.since}">
 			<scheduling-strategy>
 				<fixed-frequency />
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="8005ae3f-4726-4f5f-a7d4-cabeeb2a55b1" >
+		<choice doc:name="Is Updated by Integration User?" doc:id="8005ae3f-4726-4f5f-a7d4-cabeeb2a55b1" >
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]" >
-				<flow-ref doc:name="Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="65192664-950c-4a8a-9810-1a8211176bd6" name="sfdc-account-to-company-hubspotFlow" />
+				<flow-ref doc:name="Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="65192664-950c-4a8a-9810-1a8211176bd6" name="sfdc-account-to-company-hubspot-flow" />
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="b60eed22-c15f-422c-8094-f0a66121f55d" message='"Last Updated by Integration User"' />
@@ -26,19 +26,14 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="62f6871d-6585-47db-9810-390bf6e95a15" >
 				<ee:transform doc:name="Set Error Payload" doc:id="1f0c13c2-dc10-4205-90f8-9c7676d18f64" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": error.errorMessage.typedValue default error.description
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl/account/msg-error-payload.dwl" />
 					</ee:message>
 				</ee:transform>
 				<logger level="ERROR" doc:name="Log Error" doc:id="63c8f8fe-5780-435e-b090-639f58d9b715" message="#[payload]" />
 			</on-error-propagate>
 		</error-handler>
 	</flow>
-	<flow name="sfdc-account-to-company-hubspotFlow" doc:id="f452b1aa-2c45-4232-a489-3f597cf3169f" initialState="started">
+	<flow name="sfdc-account-to-company-hubspot-flow" doc:id="f452b1aa-2c45-4232-a489-3f597cf3169f" initialState="started">
 		<logger level="INFO" doc:name="Log Started" doc:id="b9f97dd6-0f3f-4b8e-84ce-a701a4183a2c" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Account to HS Company flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<ee:transform doc:name="Mapping for sf - hs" doc:id="b000efbd-4821-4af7-9b8c-2dd495493f04">
 			<ee:message>
@@ -59,7 +54,7 @@ payload]]></ee:set-variable>
 		</ee:transform>
 		<choice doc:name="Choice" doc:id="d96f2db9-2191-4545-a298-fe75e6e984fc" >
 			<when expression="#[!isEmpty(payload.Company_Domain__c)]">
-				<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+				<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
 				<choice doc:name="Choice" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897">
 			<when expression="#[vars.inputPayload.Hubspot_Company_ID__c != null]">
 				<logger level="INFO" doc:name="Update Company" doc:id="58d12bb2-7ec1-41e7-97f8-c23a2b2413f7" message="Update Company" />
@@ -117,7 +112,7 @@ payload.Hubspot_Company_ID__c]]></ee:set-payload>
 		</ee:transform>
 			</when>
 			<otherwise >
-				<flow-ref doc:name="Flow Reference sfdc-account-to-company-hubspotFlow" doc:id="77319993-3d95-43b1-bc06-704f852569f0" name="sfdc-account-to-company-hubspotFlow" />
+				<flow-ref doc:name="Flow Reference sfdc-account-to-company-hubspotFlow" doc:id="77319993-3d95-43b1-bc06-704f852569f0" name="sfdc-account-to-company-hubspot-flow" />
 				<ee:transform doc:name="Set companyId" doc:id="50a662b1-3585-4480-b1d4-9ce1f034fd32" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0

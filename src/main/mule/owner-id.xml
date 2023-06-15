@@ -7,7 +7,7 @@
 	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<flow name="fetch-ownerId-for-hubspot-to-salesforceFlow" doc:id="e9a11f22-22f9-4179-92a7-3819f0fc1453" >
+	<flow name="fetch-ownerid-for-hubspot-to-salesforce" doc:id="e9a11f22-22f9-4179-92a7-3819f0fc1453" >
 		<http:request method="GET" doc:name="Get hubspot owner by id" doc:id="4460924a-72e6-4a27-920c-61fa1382ab96" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/{id}" responseTimeout="60000" target="ownerId" >
 			<http:uri-params ><![CDATA[#[output application/java
 ---
@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	ownerId : vars.ownerId
 }]]]></http:uri-params>
 		</http:request>
-		<ee:transform doc:name="Transform Message" doc:id="129b418b-a111-4d09-af1b-e9e93845cd74" >
+		<ee:transform doc:name="Set Email" doc:id="129b418b-a111-4d09-af1b-e9e93845cd74" >
 			<ee:message />
 			<ee:variables >
 				<ee:set-variable variableName="email" ><![CDATA[%dw 2.0
@@ -24,14 +24,14 @@ output application/json
 (vars.ownerId.email) as String]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<http:request method="GET" doc:name="Request" doc:id="354ed8fa-ca2a-4571-8898-ba398281707a" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/email" responseTimeout="60000" >
+		<http:request method="GET" doc:name="Request SF to get user details" doc:id="354ed8fa-ca2a-4571-8898-ba398281707a" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/email" responseTimeout="60000" >
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
 	"email" : vars.email
 }]]]></http:query-params>
 		</http:request>
-		<ee:transform doc:name="Transform Message" doc:id="f4692128-64a2-4ccb-870d-31adec52e532" >
+		<ee:transform doc:name="ownerid" doc:id="f4692128-64a2-4ccb-870d-31adec52e532" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -40,17 +40,17 @@ payload.Id[0]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="2a3ddd07-14c8-4673-b844-c27e18a0f486" >
-		<http:request method="GET" doc:name="Request" doc:id="bfc8a150-d226-44db-bb0f-bb624f5daee1" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/id" target="ownerId" responseTimeout="60000">
+	<flow name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="2a3ddd07-14c8-4673-b844-c27e18a0f486" >
+		<http:request method="GET" doc:name="Request SF to get user details" doc:id="bfc8a150-d226-44db-bb0f-bb624f5daee1" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/id" target="ownerId" responseTimeout="60000">
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
 	"ownerId" : vars.ownerId
 }]]]></http:query-params>
 		</http:request>
-		<choice doc:name="Choice" doc:id="43cc00c8-4ca6-4662-9fd5-820d2eb36506" >
+		<choice doc:name="If FederationIdentifier != Null" doc:id="43cc00c8-4ca6-4662-9fd5-820d2eb36506" >
 			<when expression="#[!isEmpty(vars.ownerId.FederationIdentifier[0])]">
-				<ee:transform doc:name="Transform Message" doc:id="5afd6533-d82f-46a3-a215-5ffc7b20a64b">
+				<ee:transform doc:name="Set Email" doc:id="5afd6533-d82f-46a3-a215-5ffc7b20a64b">
 			<ee:message>
 			</ee:message>
 			<ee:variables>
@@ -68,7 +68,7 @@ output application/json
 }]]]></http:query-params>
 
 		</http:request>
-				<ee:transform doc:name="Transform Message" doc:id="22126a27-20f1-468c-9071-eba8a1509ade">
+				<ee:transform doc:name="ownerid" doc:id="22126a27-20f1-468c-9071-eba8a1509ade">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -78,8 +78,8 @@ payload.ownerId[0]]]></ee:set-payload>
 		</ee:transform>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="26a6e3b8-fcdb-4975-90c2-630fdc0479b6" message="No FederationIdentifier found"/>
-				<ee:transform doc:name="Transform Message" doc:id="d73be9fa-49aa-4106-9f96-625d8a1f469d" >
+				<logger level="INFO" doc:name="No FederationIdentifier found" doc:id="26a6e3b8-fcdb-4975-90c2-630fdc0479b6" message="No FederationIdentifier found"/>
+				<ee:transform doc:name="Set response Payload" doc:id="d73be9fa-49aa-4106-9f96-625d8a1f469d" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json

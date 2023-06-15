@@ -39,15 +39,9 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 			<ee:message>
 			</ee:message>
 			<ee:variables>
-				<ee:set-variable variableName="ownerId"><![CDATA[%dw 2.0
-output application/json
----
-payload.OwnerId]]></ee:set-variable>
-				<ee:set-variable variableName="inputPayload"><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-variable>
 				<ee:set-variable resource="dwl/account/v-inboundMappingPayload.dwl" variableName="mappingPayload" />
+				<ee:set-variable resource="dwl/account/var-inputPayload.dwl" variableName="inputPayload" />
+				<ee:set-variable resource="dwl/account/var-ownerId.dwl" variableName="ownerId" />
 			
 
 </ee:variables>
@@ -62,10 +56,7 @@ payload]]></ee:set-variable>
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable variableName="companyId"><![CDATA[%dw 2.0
-output application/json
----
-vars.inputPayload.Hubspot_Company_ID__c]]></ee:set-variable>
+								<ee:set-variable resource="dwl/account/var-comapanyId.dwl" variableName="companyId" />
 					</ee:variables>
 				</ee:transform>
 				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="1631ccfd-decc-477b-827f-86d73c483971" name="update-company-in-hs" />
@@ -94,20 +85,14 @@ vars.inputPayload.Hubspot_Company_ID__c]]></ee:set-variable>
 		</http:request>
 		<ee:transform doc:name="Set Response Payload" doc:id="9591f001-417f-4e7b-9771-e70ad2f30142" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload[0]]]></ee:set-payload>
+				<ee:set-payload resource="dwl/account/msg-account-details.dwl" />
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="83e742b6-1e34-48d2-86f2-0cbefe796126" >
+		<choice doc:name="Is HS companyId present ?" doc:id="83e742b6-1e34-48d2-86f2-0cbefe796126" >
 			<when expression="#[payload.Hubspot_Company_ID__c != null]">
 				<ee:transform doc:name="Set companyId" doc:id="841febf3-a072-461f-a1a2-011ff96e9ad9">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-payload.Hubspot_Company_ID__c]]></ee:set-payload>
+						<ee:set-payload resource="dwl/account/msg-hubspot-companyId.dwl" />
 			</ee:message>
 		</ee:transform>
 			</when>
@@ -115,10 +100,7 @@ payload.Hubspot_Company_ID__c]]></ee:set-payload>
 				<flow-ref doc:name="Flow Reference sfdc-account-to-company-hubspotFlow" doc:id="77319993-3d95-43b1-bc06-704f852569f0" name="sfdc-account-to-company-hubspot-flow" />
 				<ee:transform doc:name="Set companyId" doc:id="50a662b1-3585-4480-b1d4-9ce1f034fd32" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-vars.companyId]]></ee:set-payload>
+						<ee:set-payload resource="dwl/account/msg-companyId.dwl" />
 					</ee:message>
 				</ee:transform>
 			</otherwise>
@@ -188,18 +170,7 @@ output application/json
 		</ee:transform>
 		<ee:transform doc:name="Set Payload as per HS Sapi" doc:id="8cacce91-9832-4464-8955-21292c05be58">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
-// data = vars.mappingPayload //++ {"hubspot_company_id__c": vars.companyId}
----
-{
-  "properties": payload pluck ( 
-    { 
-        "name": $$,
-        "value": $
-    }
-  )
-}]]></ee:set-payload>
+				<ee:set-payload resource="dwl/account/msg-desire-format-for-create-company.dwl" />
 			</ee:message>
 		</ee:transform>
 		<http:request method="POST" doc:name="Request HS Sapi to Create Company" doc:id="e2db84e2-5988-494e-be54-b5908e289731" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="createdCompany" sendCorrelationId="ALWAYS">
@@ -209,10 +180,7 @@ output application/json
 			<ee:message >
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
-output application/json
----
-vars.createdCompany.companyId]]></ee:set-variable>
+				<ee:set-variable resource="dwl/account/var-created-company-id.dwl" variableName="companyId" />
 			</ee:variables>
 		</ee:transform>
 		<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="02c7be39-9f6b-46fc-b521-17f4f2fca70f" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS" target="syncBackId">
@@ -235,18 +203,7 @@ output application/json
 		</ee:transform>
 		<ee:transform doc:name="Set Payload as per HS Sapi" doc:id="47002f3e-0d2b-45fc-a491-b4353d076804" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-// data = vars.mappingPayload //++ {"hubspot_company_id__c": vars.companyId}
----
-{
-  "properties": payload pluck ( 
-    { 
-        "name": $$,
-        "value": $
-    }
-  )
-}]]></ee:set-payload>
+				<ee:set-payload resource="dwl/account/msg-desire-format-for-company.dwl" />
 			</ee:message>
 		</ee:transform>
 		<http:request method="POST" doc:name="Request HS Sapi to Update Company" doc:id="6e47af46-0010-4810-8bcc-b3698b2a1c5a" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" sendCorrelationId="ALWAYS">

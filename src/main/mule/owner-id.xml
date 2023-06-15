@@ -18,10 +18,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<ee:transform doc:name="Set Email" doc:id="129b418b-a111-4d09-af1b-e9e93845cd74" >
 			<ee:message />
 			<ee:variables >
-				<ee:set-variable variableName="email" ><![CDATA[%dw 2.0
-output application/json
----
-(vars.ownerId.email) as String]]></ee:set-variable>
+				<ee:set-variable resource="dwl/owner/var-set-email.dwl" variableName="email" />
 			</ee:variables>
 		</ee:transform>
 		<http:request method="GET" doc:name="Request SF to get user details" doc:id="354ed8fa-ca2a-4571-8898-ba398281707a" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/user/email" responseTimeout="60000" >
@@ -33,10 +30,7 @@ output application/json
 		</http:request>
 		<ee:transform doc:name="ownerid" doc:id="f4692128-64a2-4ccb-870d-31adec52e532" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload.Id[0]]]></ee:set-payload>
+				<ee:set-payload resource="dwl/owner/msg-set-ownerId.dwl" />
 			</ee:message>
 		</ee:transform>
 	</flow>
@@ -54,10 +48,7 @@ payload.Id[0]]]></ee:set-payload>
 			<ee:message>
 			</ee:message>
 			<ee:variables>
-				<ee:set-variable variableName="email"><![CDATA[%dw 2.0
-output application/json
----
-(vars.ownerId.FederationIdentifier[0]) as String]]></ee:set-variable>
+						<ee:set-variable resource="dwl/owner/var-set-federationidentifier.dwl" variableName="email" />
 			</ee:variables>
 		</ee:transform>
 				<http:request method="GET" doc:name="Get hubspot owner by email" doc:id="45f7573b-0434-4561-a5e1-a40014af50dd" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/owner/email" responseTimeout="#[p('hubspot-sapi.responseTimeout')]">
@@ -70,10 +61,7 @@ output application/json
 		</http:request>
 				<ee:transform doc:name="ownerid" doc:id="22126a27-20f1-468c-9071-eba8a1509ade">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-payload.ownerId[0]]]></ee:set-payload>
+						<ee:set-payload resource="dwl/owner/msg-set-hs-owner-id.dwl" />
 			</ee:message>
 		</ee:transform>
 			</when>
@@ -81,10 +69,7 @@ payload.ownerId[0]]]></ee:set-payload>
 				<logger level="INFO" doc:name="No FederationIdentifier found" doc:id="26a6e3b8-fcdb-4975-90c2-630fdc0479b6" message="No FederationIdentifier found"/>
 				<ee:transform doc:name="Set response Payload" doc:id="d73be9fa-49aa-4106-9f96-625d8a1f469d" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-vars.ownerId.FederationIdentifier[0]]]></ee:set-payload>
+						<ee:set-payload resource="dwl/owner/msg-set-owner-id.dwl" />
 					</ee:message>
 				</ee:transform>
 			

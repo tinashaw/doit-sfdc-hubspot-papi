@@ -118,6 +118,12 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	
 </flow>
 	<sub-flow name="opp-deal-sync-update-sub-flow" doc:id="299a2fb2-7eb9-40f5-a080-d8e6705e5c89" >
+		<ee:transform doc:name="Mapping" doc:id="11ed824a-c433-40ba-b784-627e7780d949">
+					<ee:message />
+					<ee:variables>
+						<ee:set-variable resource="dwl/-v-desirePayloadForUpdate.dwl" variableName="desirePayloadForUpdate" />
+					</ee:variables>
+				</ee:transform>
 		<http:request method="PUT" doc:name="Request to Update Deal" doc:id="2ef3e276-0eb8-4f2d-b221-bfb7b7b9af50" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/update/{dealId}" responseTimeout="-1">
 					<reconnect count="5" />
 					<http:body><![CDATA[#[vars.desirePayloadForUpdate]]]></http:body>
@@ -127,28 +133,10 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 	dealId : vars.id.Hubspot_ID__c
 }]]]></http:uri-params>
 				</http:request>
-		<ee:transform doc:name="Mapping" doc:id="11ed824a-c433-40ba-b784-627e7780d949">
-					<ee:message />
-					<ee:variables>
-						<ee:set-variable resource="dwl/-v-desirePayloadForUpdate.dwl" variableName="desirePayloadForUpdate" />
-					</ee:variables>
-				</ee:transform>
 		<logger level="INFO" doc:name="Info Log" doc:id="d68d62ca-c95d-4aab-8eba-76afa6c130b5" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"Deal Id" : payload.dealId,&#10;	"Deal Name": payload.properties.dealname.value,&#10;	"Message": "Deal Successfully Updated"&#10;}]' />
 	</sub-flow>
 	<sub-flow name="opp-deal-sync-create-sub-flow" doc:id="e2f5f26b-2a7c-4ff2-9fdb-5e223383e076" >
 		<flow-ref doc:name="opp-sf-to-deal-hs-get-companyId-by-accountId-Flow" doc:id="d255364a-bdc6-46b5-961c-cb7adbaa87a2" name="opp-sf-to-deal-hs-get-companyId-by-accountId-Flow" />
-		<ee:transform doc:name="Mapping" doc:id="fd620a46-ecb5-4c73-b038-422201786a49">
-			<ee:message>
-			</ee:message>
-			<ee:variables>
-						<ee:set-variable resource="dwl/-v-desirePayloadForCreate.dwl" variableName="desirePayloadForCreate" />
-			
-</ee:variables>
-		</ee:transform>
-		<http:request method="POST" doc:name="Request to Create Deal" doc:id="f8119788-397c-41c3-8f7c-f35ed8c80919" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/create" target="createdResponse">
-					<http:body><![CDATA[#[vars.desirePayloadForCreate]]]></http:body>
-				</http:request>
-		<logger level="INFO" doc:name="Info Log" doc:id="7b0c9c00-399f-4828-ba40-0136169fbc67" message="Deal Created in Hubspot with dealId #[vars.createdResponse.dealId]" />
 		<choice doc:name="Is ContactId  null ?" doc:id="65bc00fc-d9c2-4b81-ae6a-92ad727b41ba">
 					<when expression="#[vars.id.ContactId != null]">
 						<try doc:name="Try" doc:id="307d6c02-cf75-4541-a5db-b5a798811ce3">
@@ -164,6 +152,21 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 						<logger level="INFO" doc:name="Info Lof" doc:id="9f3967c3-ba9b-4ce8-8665-64d42cf117cf" message="Associate ContactId Not Present" />
 					</otherwise>
 				</choice>
+		<ee:transform doc:name="Mapping" doc:id="fd620a46-ecb5-4c73-b038-422201786a49">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+						<ee:set-variable resource="dwl/-v-desirePayloadForCreate.dwl" variableName="desirePayloadForCreate" />
+			
+</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request to Create Deal" doc:id="f8119788-397c-41c3-8f7c-f35ed8c80919" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/create" target="createdResponse">
+					<http:body><![CDATA[#[vars.desirePayloadForCreate]]]></http:body>
+				</http:request>
+		<logger level="INFO" doc:name="Info Log" doc:id="7b0c9c00-399f-4828-ba40-0136169fbc67" message="Deal Created in Hubspot with dealId #[vars.createdResponse.dealId]" />
+		<flow-ref doc:name="Flow Ref opp-deal-sync-back-sub-flow" doc:id="5f70cc40-8afb-4390-b34b-5849624ee320" name="opp-deal-sync-back-sub-flow"/>
+	</sub-flow>
+	<sub-flow name="opp-deal-sync-back-sub-flow" doc:id="39d403f8-442b-4b55-ba32-ccc7e75aeeb3" >
 		<ee:transform doc:name="Set syncBack payload" doc:id="ddb57b8f-71fc-4256-93df-7b750b552705">
 					<ee:message>
 						<ee:set-payload resource="dwl/-p-payload-created-reponse.dwl" />

@@ -8,7 +8,7 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
-	<flow name="contact-to-contactFlow" doc:id="f08b8942-1dd6-490e-a105-74126a8a7905">
+	<flow name="contact-to-contact-flow" doc:id="f08b8942-1dd6-490e-a105-74126a8a7905">
 		<salesforce:modified-object-listener objectType="Contact" doc:name="On Modified Object" doc:id="ac755a92-277b-46df-8750-1efc5b0b3d9a" config-ref="Salesforce_Config" since="${salesforce.since}">
 			<scheduling-strategy>
 				<fixed-frequency />
@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		</salesforce:modified-object-listener>
 		<choice doc:name="Is Updated by Integration User?" doc:id="4c7e99b7-5aae-483e-baad-588f824ab237">
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]">
-				<flow-ref doc:name="Flow Ref to sf-contact-sync-to-hubspotFlow" doc:id="375305bf-b2e6-4b9c-8f6c-194d3a3b7fad" name="sf-contact-sync-to-hubspotFlow" />
+				<flow-ref doc:name="Flow Ref to sf-contact-sync-to-hubspotFlow" doc:id="375305bf-b2e6-4b9c-8f6c-194d3a3b7fad" name="sf-contact-sync-to-hubspot-flow" />
 				<logger level="INFO" doc:name="Log Completed" doc:id="df9d8f0d-27c0-4463-a24a-bf9e422a05fd" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 			</when>
 			<otherwise>
@@ -24,7 +24,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="0dfd24e3-23de-4c59-b2af-2c73c2942f27" >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate ANY" doc:id="0dfd24e3-23de-4c59-b2af-2c73c2942f27" type="ANY">
 				<ee:transform doc:name="Set Error Payload" doc:id="bbaf91f9-3265-4642-b8c9-570c859cc769" >
 					<ee:message >
 						<ee:set-payload resource="dwl/contact/msg-error-message.dwl" />
@@ -35,7 +35,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		</error-handler>
 	
 </flow>
-	<flow name="sf-contact-sync-to-hubspotFlow" doc:id="8fe12f55-b744-46ff-a036-a8c81024f1f7" initialState="started">
+	<flow name="sf-contact-sync-to-hubspot-flow" doc:id="8fe12f55-b744-46ff-a036-a8c81024f1f7" initialState="started">
 		<logger level="INFO" doc:name="Log Started" doc:id="114af996-2ff4-4296-a951-a5311867d79f" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Contact to HS Contact  Sync flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<ee:transform doc:name="Set Ids" doc:id="273a4e08-bc08-4ed2-8135-8dbf53da7531">
 			<ee:message>
@@ -53,7 +53,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 			<when expression="#[!isEmpty(vars.companyId)]">
 				<logger level="INFO" doc:name="Log companyId" doc:id="c9151f4c-e04a-4040-96d3-ff82f3d10713" message='#["Hubspot CompanyId: " ++ vars.companyId default null]' />
 				<flow-ref doc:name="fetch ownerId" doc:id="d72d7346-2075-477e-afb2-ac7926375de7" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
-				<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="771219d4-6a83-4e33-a33b-88eb34bff62b" name="contact-validation-subFlow" />
+				<flow-ref doc:name="Flow Ref to contact-validation-subFlow" doc:id="771219d4-6a83-4e33-a33b-88eb34bff62b" name="contact-validation-sub-fow" />
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Log companyId" doc:id="29dfc994-1279-426d-9b47-0ef151d1017a" message='#["Hubspot CompanyId: " ++ vars.companyId default null]'/>
@@ -62,7 +62,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	
 
 </flow>
-	<sub-flow name="contact-validation-subFlow" doc:id="182d8b41-012a-4625-a218-baff370bc888" >
+	<sub-flow name="contact-validation-sub-fow" doc:id="182d8b41-012a-4625-a218-baff370bc888" >
 		<choice doc:name="Is vid == null ?" doc:id="df9ddc08-8b31-4e44-9c4f-b5d51f7b5f3e">
 			<when expression="#[vars.id.vid == null]">
 				<flow-ref doc:name="Flow Ref contact-to-contact-validation-sub-flow" doc:id="1fee3f3a-c555-4f72-8cae-0784761eee16" name="contact-to-contact-validation-sub-flow"/>
@@ -87,7 +87,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	</sub-flow>
 	<sub-flow name="contact-to-contact-validation-sub-flow" doc:id="d6a07fef-fad7-40e5-b7d0-5d9b3a743107" >
 		<logger level="INFO" doc:name="Log Hubspot_Contact_ID__c = null" doc:id="fd468c2c-f999-48ba-ab1c-2c97023fc5c5" message='#["Hubspot_Contact_ID__c is null"]' />
-		<flow-ref doc:name="get hubspot contact by email" doc:id="2cf1ec15-51dc-4746-8fa1-ef002d8d156e" name="get-hubspot-contact-by-emailSub_Flow" target="hubspotContact" />
+		<flow-ref doc:name="get hubspot contact by email" doc:id="2cf1ec15-51dc-4746-8fa1-ef002d8d156e" name="get-hubspot-contact-by-email-sub-flow" target="hubspotContact" />
 		<choice doc:name="isEmpty Hubspot Contact ?" doc:id="a86185f3-68f5-47f7-ab45-022941378125">
 			<when expression="#[isEmpty(vars.hubspotContact)]">
 				<flow-ref doc:name="Flow Ref contact-to-contact-create-contact-sub-flow" doc:id="2d1769e8-3bd1-41df-91da-c4586e0dc098" name="contact-to-contact-create-contact-sub-flow"/>
@@ -155,7 +155,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		</ee:transform>
 		<logger level="INFO" doc:name="Log Completed" doc:id="909e7f38-a348-45ce-a112-50174b2d4e1f" message="Contact Creation in Hubspot  Completed" />
 	</sub-flow>
-	<flow name="sf-contactId-to-hs-contact-vid-Flow" doc:id="0b7ae7cc-017b-4e0c-b9a7-9c61db250fe1" >
+	<flow name="sf-contactid-to-hs-contact-vid-flow" doc:id="0b7ae7cc-017b-4e0c-b9a7-9c61db250fe1" >
 		<http:request method="GET" doc:name="Request to Get Contact Details" doc:id="fc62b417-ad07-4b8a-be32-d3959a901929" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/contact/{id}" targetValue="#[payload[0]]" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
@@ -178,7 +178,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 			
 </when>
 			<otherwise >
-				<flow-ref doc:name="sf-contact-sync-to-hubspotFlow" doc:id="f242aaa8-0595-44d3-8fa2-8b863aec39a7" name="sf-contact-sync-to-hubspotFlow" />
+				<flow-ref doc:name="sf-contact-sync-to-hubspotFlow" doc:id="f242aaa8-0595-44d3-8fa2-8b863aec39a7" name="sf-contact-sync-to-hubspot-flow" />
 				<ee:transform doc:name="Set contactId" doc:id="bce3a37b-dd66-4db0-81c8-93372b357e0d" >
 					<ee:message >
 						<ee:set-payload resource="dwl/contact/msg-contact-id.dwl" />
@@ -188,8 +188,8 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 </otherwise>
 		</choice>
 	</flow>
-	<sub-flow name="get-hubspot-contact-by-emailSub_Flow" doc:id="501231d0-8f38-4b65-9539-46f0ce45519d" >
-		<try doc:name="Try" doc:id="0bcb5a76-f9f6-46c8-ae48-b6a063b0d4cd" >
+	<sub-flow name="get-hubspot-contact-by-email-sub-flow" doc:id="501231d0-8f38-4b65-9539-46f0ce45519d" >
+		<try doc:name="Lookup contact with email" doc:id="0bcb5a76-f9f6-46c8-ae48-b6a063b0d4cd" >
 			<http:request method="GET" doc:name="get Hubspot Contact by Email" doc:id="1425803b-bb04-44c7-b161-c80977d18dbb" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/email/{email}" responseTimeout="#[p('hubspot-sapi.responseTimeout')]" sendCorrelationId="ALWAYS">
 				<http:uri-params ><![CDATA[#[output application/java
 ---
@@ -198,7 +198,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 }]]]></http:uri-params>
 		</http:request>
 			<error-handler >
-				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="31485e49-f162-4dee-acfe-9a12bb6aaa42" type="HTTP:NOT_FOUND">
+				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue- HTTP:NOT_FOUND" doc:id="31485e49-f162-4dee-acfe-9a12bb6aaa42" type="HTTP:NOT_FOUND">
 					<logger level="DEBUG" doc:name="Log 'No Contact Found'" doc:id="9654acbd-d843-4b57-bf24-83d3e083b570" message='#["No Contact is found in Hubspot with email: " ++ vars.id.email as String]'/>
 					<ee:transform doc:name="Set Payload as Null" doc:id="c398062d-d53a-4f4d-81b7-1ae5ca08149c" >
 						<ee:message >

@@ -23,7 +23,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="62f6871d-6585-47db-9810-390bf6e95a15" >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate - ANY" doc:id="62f6871d-6585-47db-9810-390bf6e95a15" type="ANY">
 				<ee:transform doc:name="Set Error Payload" doc:id="1f0c13c2-dc10-4205-90f8-9c7676d18f64" >
 					<ee:message >
 						<ee:set-payload resource="dwl/account/msg-error-payload.dwl" />
@@ -46,10 +46,10 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 
 </ee:variables>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="d96f2db9-2191-4545-a298-fe75e6e984fc" >
+		<choice doc:name="Is Company Domain ?" doc:id="d96f2db9-2191-4545-a298-fe75e6e984fc" >
 			<when expression="#[!isEmpty(payload.Company_Domain__c)]">
 				<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
-				<choice doc:name="Choice" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897">
+				<choice doc:name="Is Hs Company Id present ?" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897">
 			<when expression="#[vars.inputPayload.Hubspot_Company_ID__c != null]">
 				<logger level="INFO" doc:name="Update Company" doc:id="58d12bb2-7ec1-41e7-97f8-c23a2b2413f7" message="Update Company" />
 				<ee:transform doc:name="Set CompanyId" doc:id="5ae6d867-01c3-4aa4-bc80-78cae3295a46">
@@ -75,7 +75,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	
 
 </flow>
-	<flow name="accountId-to-companyId-Flow" doc:id="2807bce8-5fb5-4fae-9e30-d14800d353ea" >
+	<flow name="accountid-to-companyid-flow" doc:id="2807bce8-5fb5-4fae-9e30-d14800d353ea" >
 		<http:request method="GET" doc:name="Request to Get Account Details" doc:id="805c35d9-e093-4cc2-a238-cd7d83799e18" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/{id}" targetValue="#[payload[0]]" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
@@ -139,7 +139,7 @@ output application/json
 			
 </ee:variables>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="b4a91e20-9790-4835-a617-f274ff2fe91b" >
+		<choice doc:name="Is companyId null?" doc:id="b4a91e20-9790-4835-a617-f274ff2fe91b" >
 			<when expression="#[vars.companyId != null]">
 				<logger level="INFO" doc:name="UPDATE company" doc:id="9b5297d8-a813-4acc-91b9-a50eefdc2b81" message="UPDATE company"/>
 				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="67894f83-ce26-44a0-b0ac-d84ae2bbdce6" name="update-company-in-hs"/>
@@ -191,7 +191,7 @@ output application/json
 	"Id":vars.inputPayload.Id
 }]]]]></http:body>
 		</http:request>
-		<logger level="INFO" doc:name="Logger" doc:id="17b854d6-3d23-4eb4-9014-63ef51c499e9" message='#[{"Hubspot_Company_ID__c": vars.companyId,&#10;	"Account Id":vars.inputPayload.Id,&#10;	"Message" : "Company Created in Hubspot"&#10;}]'/>
+		<logger level="INFO" doc:name="Info Log" doc:id="17b854d6-3d23-4eb4-9014-63ef51c499e9" message='#[{"Hubspot_Company_ID__c": vars.companyId,&#10;	"Account Id":vars.inputPayload.Id,&#10;	"Message" : "Company Created in Hubspot"&#10;}]'/>
 	</sub-flow>
 	<sub-flow name="update-company-in-hs" doc:id="a270043a-2743-4aa6-8be5-b960740643e3" >
 		<logger level="INFO" doc:name="Update company later proceed" doc:id="812fff2d-7728-4cfb-a171-fd5389aefec8" message="update company flow started"/>

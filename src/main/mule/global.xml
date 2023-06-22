@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	</http:listener-config>
 	<configuration-properties doc:name="Configuration properties" doc:id="4cae6e0d-7481-41fc-a713-fd91d4cbb15b" file="properties/${mule.env}.yaml" />
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2319a29a-3722-49c7-942a-eb9cf7564d0c" >
-		<salesforce:basic-connection username="${salesforce.system.username}" password="${secure::salesforce.system.password}" securityToken="${secure::salesforce.system.security_token}" url="${salesforce.system.authorization_url}" >
+		<salesforce:basic-connection username="${salesforce.system.username}" password="${secure::salesforce.system.password}" securityToken="${secure::salesforce.system.security-token}" url="${salesforce.system.authorization_url}" >
 			<reconnection >
 				<reconnect count="${salesforce.reconnection.attempt}" frequency="${salesforce.reconnection.frequency}"/>
 			</reconnection>
@@ -37,4 +37,6 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="7b1c99de-b941-4fbb-8f7b-80038eb893c7" file="properties/${mule.env}-secure.yaml" key="${mule.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
+	<global-property doc:name="Global Property" doc:id="6887e9d7-96a6-492b-9d37-62cec40925af" name="mule.key" value="DoiT123" />
+	<global-property doc:name="Global Property" doc:id="77dfe121-b082-4c4b-8654-37f0382dee5f" name="mule.env" value="uat" />
 </mule>

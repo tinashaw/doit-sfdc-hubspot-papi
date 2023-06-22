@@ -14,7 +14,7 @@ salesforce:
   since: "2023-05-17 16:30:40"
   system:
     URL: "https://doit-intl--stage.sandbox.my.salesforce.com"
-    username: "udit.khare+sandbox1@apisero.com"
+    username: "integration@doit-intl.com.doit.stage"
     authorization_url: "https://test.salesforce.com/services/Soap/u/55.0"
   reconnection:
     frequency: "2000"
@@ -22,7 +22,7 @@ salesforce:
     
 
 event:
-  LastModifiedById: "['00576000001aTlhAAE']"
+  LastModifiedById: "['0058c00000An1bgAAB']"
 
 recentcreatedcontact:
   lastmodifiedtime: "1682248414000"

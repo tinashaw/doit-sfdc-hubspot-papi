@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_b33945b1_d1a2_4b8f_b850_037a3e766aec_Output_Variables_mappingPayload = Any
+

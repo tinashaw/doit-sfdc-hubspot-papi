@@ -7,33 +7,25 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/module-logging http://www.mulesoft.org/schema/mule/module-logging/current/mule-module-logging.xsd">
-	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="8d5ca710-030a-4c64-bccc-4b2c42904ccf" >
-		<http:request-connection protocol="HTTPS" host="api.hubapi.com" />
-	</http:request-config>
 	<flow name="lead-sf-to-contact-hs-starting-flow" doc:id="d7e26a2e-2623-4aac-9a82-f87ebf6673e9" >
-		<salesforce:modified-object-listener objectType="Lead" doc:name="On Modified Object" doc:id="9013a479-ebdb-4d86-ace9-cbddb644ec6f" config-ref="Salesforce_Config" since="${salesforce.since}">
+		<salesforce:modified-object-listener objectType="Lead" doc:name="On Modified Lead" doc:id="9013a479-ebdb-4d86-ace9-cbddb644ec6f" config-ref="Salesforce_Config" since="${salesforce.since}">
 			<scheduling-strategy>
 				<fixed-frequency />
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="0dadb081-026a-45f5-b722-2e44ac01e298" >
+		<choice doc:name="Is Updated by Integration User?" doc:id="0dadb081-026a-45f5-b722-2e44ac01e298" >
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]" >
 				<flow-ref doc:name="Flow Ref to lead-sf-to-contact-hsFlow" doc:id="7bd29c35-3b6d-4059-a88f-0e2281363bf6" name="lead-sf-to-contact-hs-flow" />
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="18e0d730-9abd-42fb-9413-656c2ba39371" message='"No Appropriate Event"' />
+				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="2c705d50-0873-4016-b44c-f7c177d5e22c" message='"Last Updated by Integration User"' />
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="be5759f5-207f-4c98-9ce8-c4999bf4983b" >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate ANY" doc:id="be5759f5-207f-4c98-9ce8-c4999bf4983b" type="ANY">
 				<ee:transform doc:name="Set Error Payload" doc:id="e2e819eb-04f7-4a22-b6ad-b6f884ac209a" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": error.errorMessage.typedValue default error.description
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl/error/p-error-message.dwl" />
 					</ee:message>
 				</ee:transform>
 				<logger level="ERROR" doc:name="Log Error" doc:id="350b102d-69d6-4102-b0ec-70d4068d906e" message="#[payload]" />
@@ -44,21 +36,21 @@ output application/json
 		<logger level="INFO" doc:name="Log Started" doc:id="6f6e95eb-8333-40f1-bc0c-352a3b967adc" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]"/>
 		<ee:transform doc:name="filter fields" doc:id="16649b87-2f3f-4e7e-b9f6-6289771723bc" >
 			<ee:message >
-				<ee:set-payload resource="dwl-lead-contact/p-payload.dwl" />
+				<ee:set-payload resource="dwl/lead/p-payload.dwl" />
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable resource="dwl-lead-contact/v-sfdcEmailDomain.dwl" variableName="sfdcCompanyDomain" />
-				<ee:set-variable resource="dwl-lead-contact/v-set-leadId.dwl" variableName="leadId" />
+				<ee:set-variable resource="dwl/lead/v-sfdcEmailDomain.dwl" variableName="sfdcCompanyDomain" />
+				<ee:set-variable resource="dwl/lead/v-set-leadId.dwl" variableName="leadId" />
 			</ee:variables>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="26cd6295-0231-441b-b3cd-016cb3fd81d2" >
+		<choice doc:name="HS company present?" doc:id="26cd6295-0231-441b-b3cd-016cb3fd81d2" >
 			<when expression="#[!isEmpty(payload.Hubspot_Company_ID__c)]" >
 				<flow-ref doc:name="Flow Ref lead-sf-to-contact-hs-company-update-flow" doc:id="31602144-3c70-468d-be35-8a3b4de3259c" name="lead-sf-to-contact-hs-company-update-flow"/>
 				<ee:transform doc:name="CompanyId" doc:id="54d989b2-827b-4f8c-8d55-790f2d15cb09">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable resource="dwl-lead-contact/v-set-companyId.dwl" variableName="companyId" />
+						<ee:set-variable resource="dwl/lead/v-set-companyId.dwl" variableName="companyId" />
 					</ee:variables>
 				</ee:transform>
 			</when>
@@ -82,13 +74,17 @@ output application/json
 			<ee:message >
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable resource="dwl-lead-contact/v-set-ownerId.dwl" variableName="ownerId" />
+				<ee:set-variable resource="dwl/lead/v-set-ownerId.dwl" variableName="ownerId" />
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="904acd6f-cc43-4bf6-8d12-2e9d56581a39" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId"/>
-		<choice doc:name="Choice" doc:id="45ce5ad0-1f7b-44dc-a8de-9701df96c3b9" >
+		<flow-ref doc:name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="904acd6f-cc43-4bf6-8d12-2e9d56581a39" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId"/>
+		<flow-ref doc:name="Flow Ref lead-sf-to-contact-hs-sub-flow" doc:id="49deda3d-7174-4bd1-9e7b-8da6b1fc4f63" name="lead-sf-to-contact-hs-sub-flow"/>
+		<logger level="INFO" doc:name="Log Completed" doc:id="fc0feaa9-30ff-4539-97fd-2063bdf1ff82" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]"/>
+	</flow>
+	<sub-flow name="lead-sf-to-contact-hs-sub-flow" doc:id="66f19804-d595-4647-98d6-0e4a29ea34d0" >
+		<choice doc:name="HS contact vid present ?" doc:id="45ce5ad0-1f7b-44dc-a8de-9701df96c3b9">
 			<when expression="#[isEmpty(payload.Hubspot_Contact_ID__c)]">
-				<try doc:name="Try" doc:id="08ff4102-9159-42ba-83e1-78acfd68c63b">
+				<try doc:name="lookup-for-contact-on-email" doc:id="08ff4102-9159-42ba-83e1-78acfd68c63b">
 			<http:request method="GET" doc:name="Lookup for contact by Email" doc:id="2fd109fd-7c94-4448-890b-1612b4060db0" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/email/{email}" target="hsContactDeatails" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<http:uri-params><![CDATA[#[output application/java
 ---
@@ -99,13 +95,13 @@ output application/json
 			<ee:transform doc:name="vid" doc:id="5552cc50-8670-4873-b50d-c9fd4a6237fc">
 						<ee:message />
 						<ee:variables>
-							<ee:set-variable resource="dwl-lead-contact/v-set-vid.dwl" variableName="vid" />
+							<ee:set-variable resource="dwl/lead/v-set-vid.dwl" variableName="vid" />
 						</ee:variables>
 					</ee:transform>
-					<logger level="INFO" doc:name="Info Logger" doc:id="096d4abf-0293-410a-a394-66940318dacb" message="Contact Exist with Vid #[vars.vid]"/>
-					<flow-ref doc:name="lead-sf-to-contact-hs-update-Flow" doc:id="02f8c3ad-7b47-49af-a272-588c2fb9f740" name="lead-sf-to-contact-hs-update-Flow" />
+					<logger level="INFO" doc:name="Info Logger" doc:id="096d4abf-0293-410a-a394-66940318dacb" message="Contact Exist with Vid #[vars.vid]" />
+					<flow-ref doc:name="lead-sf-to-contact-hs-update-Flow" doc:id="02f8c3ad-7b47-49af-a272-588c2fb9f740" name="lead-sf-to-contact-hs-update-flow" />
 					<http:request method="POST" doc:name="Request to Update Lead" doc:id="0d907cea-beec-446d-b24b-1f3ca17b456f" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/lead/update" responseTimeout="-1" sendCorrelationId="ALWAYS">
-						<http:body ><![CDATA[#[%dw 2.0
+						<http:body><![CDATA[#[%dw 2.0
 output application/json
 ---
 [{
@@ -117,40 +113,39 @@ output application/json
 	]]]]></http:body>
 					</http:request>
 					<error-handler>
-				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="cfe5334d-bdb4-46d3-9948-28527616ec17" type="HTTP:INTERNAL_SERVER_ERROR, HTTP:NOT_FOUND">
+				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue HTTP:INTERNAL_SERVER_ERROR, HTTP:NOT_FOUND" doc:id="cfe5334d-bdb4-46d3-9948-28527616ec17" type="HTTP:INTERNAL_SERVER_ERROR, HTTP:NOT_FOUND">
 					<ee:transform doc:name="Error Message" doc:id="5e90ae9e-cc81-4c42-8f37-2d3be83ee572">
 						<ee:message>
 						</ee:message>
 						<ee:variables>
-									<ee:set-variable resource="dwl-lead-contact/v-isContact.dwl" variableName="isContact" />
+									<ee:set-variable resource="dwl/lead/v-isContact.dwl" variableName="isContact" />
 						</ee:variables>
 					</ee:transform>
-					<choice doc:name="Choice" doc:id="082d48fd-4777-49ac-8338-c887b678cceb">
+					<choice doc:name="Checks error message ?" doc:id="082d48fd-4777-49ac-8338-c887b678cceb">
 						<when expression='#[vars.isContact == "contact does not exist"]'>
 							<flow-ref doc:name="lead-sf-to-contact-hs-create-Flow" doc:id="2ca43ee2-8631-4f1b-acf4-e3a970ce9f69" name="lead-sf-to-contact-hs-create-flow" />
 						</when>
-								<otherwise >
-									<logger level="INFO" doc:name="Logger" doc:id="aa0c04e9-9dd3-4df6-8fec-d1ffe6f75c3b" />
+								<otherwise>
+									<logger level="INFO" doc:name="Info Log" doc:id="aa0c04e9-9dd3-4df6-8fec-d1ffe6f75c3b" message="#[vars.isContact]" />
 								</otherwise>
 					</choice>
 				</on-error-continue>
 			</error-handler>
 		</try>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="vid" doc:id="f4d7bfbd-42fc-4716-b5e8-96777ee2ae43" >
-					<ee:message >
+			<otherwise>
+				<ee:transform doc:name="vid" doc:id="f4d7bfbd-42fc-4716-b5e8-96777ee2ae43">
+					<ee:message>
 					</ee:message>
-					<ee:variables >
-						<ee:set-variable resource="dwl-lead-contact/v-vid.dwl" variableName="vid" />
+					<ee:variables>
+						<ee:set-variable resource="dwl/lead/v-vid.dwl" variableName="vid" />
 					</ee:variables>
 				</ee:transform>
 				<logger level="INFO" doc:name="Info Logger" doc:id="602d420e-ef97-4a24-b18f-993e65097ef5" message="Contact Exist with Vid #[vars.vid]" />
-				<flow-ref doc:name="lead-sf-to-contact-hs-update-Flow" doc:id="ac534ba2-8970-4d6e-bb5e-ffccb79e1ab0" name="lead-sf-to-contact-hs-update-Flow"/>
+				<flow-ref doc:name="lead-sf-to-contact-hs-update-Flow" doc:id="ac534ba2-8970-4d6e-bb5e-ffccb79e1ab0" name="lead-sf-to-contact-hs-update-flow" />
 			</otherwise>
 		</choice>
-		<logger level="INFO" doc:name="Log Completed" doc:id="fc0feaa9-30ff-4539-97fd-2063bdf1ff82" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]"/>
-	</flow>
+	</sub-flow>
 	<sub-flow name="lead-sf-to-contact-hs-company-update-flow" doc:id="a670c79a-d74a-40ee-b1c0-0e4dc04bb441" >
 		<logger level="INFO" doc:name="Log Started" doc:id="28f0f5d7-8409-4518-b3b6-7ebac8c7bd9a" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-company-update-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<ee:transform doc:name="Company Mapping" doc:id="c9823d4c-23b3-48ef-ab29-3338e9149574" >
@@ -160,23 +155,23 @@ output application/json
 output application/json
 ---
 payload.OwnerId]]></ee:set-variable>
-				<ee:set-variable resource="dwl-lead-contact/v-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
+				<ee:set-variable resource="dwl/lead/v-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 			</ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="84f1a60e-4fee-4503-b6dd-318e1b4d7ac5" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+		<flow-ref doc:name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="84f1a60e-4fee-4503-b6dd-318e1b4d7ac5" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
 		<ee:transform doc:name="UPDATE: requestPayloadPostCompany" doc:id="beec7a89-0f7a-441a-8314-2fc7843b3453" >
 			<ee:message />
 			<ee:variables >
-				<ee:set-variable resource="dwl-lead-contact/v-update-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
+				<ee:set-variable resource="dwl/lead/v-update-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 			</ee:variables>
 		</ee:transform>
 		<ee:transform doc:name="Desire Payload for Company" doc:id="bfa030c3-93e2-4ea5-a2b8-6874daac0fcd" >
 			<ee:message />
 			<ee:variables >
-				<ee:set-variable resource="dwl-lead-contact/v-update-desire-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
+				<ee:set-variable resource="dwl/lead/v-update-desire-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 			</ee:variables>
 		</ee:transform>
-		<http:request method="POST" doc:name="Request to update company" doc:id="be559124-1bbb-4f74-b650-343acdc67b8c" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" target="hsUpdatedCompanyData" >
+		<http:request method="POST" doc:name="Request to update company" doc:id="be559124-1bbb-4f74-b650-343acdc67b8c" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" target="hsUpdatedCompanyData" sendCorrelationId="ALWAYS">
 			<http:body ><![CDATA[#[vars.requestPayloadPostCompany]]]></http:body>
 			<http:query-params ><![CDATA[#[output application/java
 ---
@@ -189,7 +184,7 @@ payload.OwnerId]]></ee:set-variable>
 	</sub-flow>
 	<flow name="lead-sf-to-contact-hs-fetch-company-flow" doc:id="9d14cce2-8c89-4ac8-8014-0202d18d80fc" >
 		<logger level="INFO" doc:name="Log Started" doc:id="cf4623d9-8921-4c82-937e-26c3a4d7c3a6" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-fetch-company-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]"/>
-		<http:request method="POST" doc:name="Lookup for companyId" doc:id="a3e276c6-6a79-4924-b6b7-8a4c3a3a4fe4" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/domain" target="getDomainFromHs" responseTimeout="-1">
+		<http:request method="POST" doc:name="Lookup for companyId" doc:id="a3e276c6-6a79-4924-b6b7-8a4c3a3a4fe4" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/domain" target="getDomainFromHs" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<reconnect count="5" />
 			<http:body><![CDATA[#[%dw 2.0
 output application/json
@@ -221,12 +216,12 @@ output application/json
 			<ee:message>
 			</ee:message>
 			<ee:variables>
-				<ee:set-variable resource="dwl-lead-contact/v-matchedCompanyIDArray.dwl" variableName="matchedCompanyIDArray" />
+				<ee:set-variable resource="dwl/lead/v-matchedCompanyIDArray.dwl" variableName="matchedCompanyIDArray" />
 			</ee:variables>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="002974d7-3673-4059-816e-461f27a98658">
+		<choice doc:name="size of matching domain company ?" doc:id="002974d7-3673-4059-816e-461f27a98658">
 			<when expression="#[sizeOf(vars.matchedCompanyIDArray) == 1]">
-				<http:request method="GET" doc:name="Request to Get  Company Details" doc:id="e76f59d6-3801-44eb-b756-8e201977a1f0" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/{companyid}" target="hsCompanyData">
+				<http:request method="GET" doc:name="Request to Get  Company Details" doc:id="e76f59d6-3801-44eb-b756-8e201977a1f0" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/{companyid}" target="hsCompanyData" sendCorrelationId="ALWAYS">
 					<http:uri-params><![CDATA[#[output application/java
 ---
 {
@@ -237,7 +232,7 @@ output application/json
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable resource="dwl-lead-contact/v-set-companyId-1.dwl" variableName="companyId" />
+						<ee:set-variable resource="dwl/lead/v-set-companyId-1.dwl" variableName="companyId" />
 					</ee:variables>
 				</ee:transform>
 			</when>
@@ -246,8 +241,17 @@ output application/json
 				<flow-ref doc:name="lead-sf-to-company-validation" doc:id="aa3cf63c-1d7a-4af3-90c4-d4a58b59cb4d" name="lead-sf-to-company-validation" />
 			</when>
 			<when expression="#[sizeOf(vars.matchedCompanyIDArray) == 0]">
-				<logger level="INFO" doc:name="Info Logger" doc:id="64527168-4f65-462f-a5d7-0e60bb84b31f" message="No Company Found, Now we are creating a Company"/>
-				<ee:transform doc:name="Company Mapping" doc:id="f700458d-3c96-4248-8ba3-613635fc3c01">
+				<flow-ref doc:name="Flow Ref lead-sf-to-contact-hs-create-company-sub-flow" doc:id="6f54b222-f84f-4006-8a01-04ae816745b3" name="lead-sf-to-contact-hs-create-company-sub-flow"/>
+			</when>
+			<otherwise >
+				<logger level="DEBUG" doc:name="Info Lof" doc:id="251e2e62-e675-4120-8577-b4d99cde7360" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Log Completed" doc:id="fc357b1d-789f-4a11-a541-025a034da3c9" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-fetch-company-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]"/>
+	</flow>
+	<sub-flow name="lead-sf-to-contact-hs-create-company-sub-flow" doc:id="fed24c67-d04c-480d-968d-515c8ec9e2c6" >
+		<logger level="INFO" doc:name="Info Logger" doc:id="64527168-4f65-462f-a5d7-0e60bb84b31f" message="No Company Found, Now we are creating a Company" />
+		<ee:transform doc:name="Company Mapping" doc:id="f700458d-3c96-4248-8ba3-613635fc3c01">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
@@ -255,41 +259,35 @@ output application/json
 output application/json
 ---
 payload.OwnerId]]></ee:set-variable>
-						<ee:set-variable resource="dwl-lead-contact/v-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
+						<ee:set-variable resource="dwl/lead/v-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 					</ee:variables>
 				</ee:transform>
-				<flow-ref doc:name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="a2b26567-3fcd-42c3-95e6-fcd9e0789111" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
-				<ee:transform doc:name="UPDATE: requestPayloadPostCompany" doc:id="c5b724f9-b07e-479e-adfb-8e4ea3dbbe2b">
+		<flow-ref doc:name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="a2b26567-3fcd-42c3-95e6-fcd9e0789111" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
+		<ee:transform doc:name="UPDATE: requestPayloadPostCompany" doc:id="c5b724f9-b07e-479e-adfb-8e4ea3dbbe2b">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable resource="dwl-lead-contact/v-update-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
+						<ee:set-variable resource="dwl/lead/v-update-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 					</ee:variables>
 				</ee:transform>
-				<ee:transform doc:name="Desire Payload for Company" doc:id="8b00e212-f873-4d37-a648-4a678f84aa63">
+		<ee:transform doc:name="Desire Payload for Company" doc:id="8b00e212-f873-4d37-a648-4a678f84aa63">
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-						<ee:set-variable resource="dwl-lead-contact/v-update-desire-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
+						<ee:set-variable resource="dwl/lead/v-update-desire-requestPayloadPostCompany.dwl" variableName="requestPayloadPostCompany" />
 					</ee:variables>
 				</ee:transform>
-				<http:request method="POST" doc:name="Request to create company" doc:id="cebd5255-0ce1-4bf3-9f7b-5eab6225dc6a" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="hsCompanyData">
+		<http:request method="POST" doc:name="Request to create company" doc:id="cebd5255-0ce1-4bf3-9f7b-5eab6225dc6a" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="hsCompanyData" sendCorrelationId="ALWAYS">
 					<http:body><![CDATA[#[vars.requestPayloadPostCompany]]]></http:body>
 				</http:request>
-				<ee:transform doc:name="companyId" doc:id="cc5f2298-e6de-47ac-af44-ef87cd8644ad">
+		<ee:transform doc:name="companyId" doc:id="cc5f2298-e6de-47ac-af44-ef87cd8644ad">
 					<ee:message />
 					<ee:variables>
-						<ee:set-variable resource="dwl-lead-contact/v-set-created-companyId.dwl" variableName="companyId" />
+						<ee:set-variable resource="dwl/lead/v-set-created-companyId.dwl" variableName="companyId" />
 					</ee:variables>
 				</ee:transform>
-				<logger level="INFO" doc:name="Info Logger" doc:id="a3875a47-d971-44f3-b15b-e45bfe5faa68" message="Company Created with companyId #[vars.companyId]"/>
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="251e2e62-e675-4120-8577-b4d99cde7360" />
-			</otherwise>
-		</choice>
-		<logger level="INFO" doc:name="Log Completed" doc:id="fc357b1d-789f-4a11-a541-025a034da3c9" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-fetch-company-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]"/>
-	</flow>
+		<logger level="INFO" doc:name="Info Logger" doc:id="a3875a47-d971-44f3-b15b-e45bfe5faa68" message="Company Created with companyId #[vars.companyId]" />
+	</sub-flow>
 	<flow name="lead-sf-to-company-validation" doc:id="db5d54bf-6cde-4d7e-b81e-c4062b7195bd" >
 		<logger level="INFO" doc:name="Log Started" doc:id="791766d1-676a-45c4-b0d8-e0874198ddd1" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-company-validation&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<choice doc:name="Checking lifecycle_stage__c " doc:id="6e04d34b-5d67-4490-a4d8-9999e5ba8b75" >
@@ -298,17 +296,17 @@ payload.OwnerId]]></ee:set-variable>
 			<ee:message>
 			</ee:message>
 					<ee:variables >
-						<ee:set-variable resource="dwl-lead-contact/v-customerCompany.dwl" variableName="customerCompany" />
+						<ee:set-variable resource="dwl/lead/v-customerCompany.dwl" variableName="customerCompany" />
 					</ee:variables>
 		</ee:transform>
-				<choice doc:name="Choice" doc:id="f9395117-5f93-4cd6-bd41-182ec4ceb377">
+				<choice doc:name="Number of customerCompany ?" doc:id="f9395117-5f93-4cd6-bd41-182ec4ceb377">
 			<when expression="#[sizeOf(vars.customerCompany)&gt;2]">
 						<logger level="INFO" doc:name="Info Log" doc:id="ddacd837-62ec-45c6-bc32-11528bb925f1" message="More than one Customer Company Found"/>
 						<ee:transform doc:name="companyId" doc:id="e4e9218d-61cd-4293-953e-2f0bd971eb2b" >
 							<ee:message >
 							</ee:message>
 							<ee:variables >
-								<ee:set-variable resource="dwl-lead-contact/v-set-companyId-2.dwl" variableName="companyId" />
+								<ee:set-variable resource="dwl/lead/v-set-companyId-2.dwl" variableName="companyId" />
 							</ee:variables>
 						</ee:transform>
 					</when>
@@ -318,7 +316,7 @@ payload.OwnerId]]></ee:set-variable>
 							<ee:message >
 							</ee:message>
 							<ee:variables >
-								<ee:set-variable resource="dwl-lead-contact/v-set-companyId-3.dwl" variableName="companyId" />
+								<ee:set-variable resource="dwl/lead/v-set-companyId-3.dwl" variableName="companyId" />
 							</ee:variables>
 						</ee:transform>
 					</when>
@@ -328,27 +326,27 @@ payload.OwnerId]]></ee:set-variable>
 							<ee:message >
 							</ee:message>
 							<ee:variables >
-								<ee:set-variable resource="dwl-lead-contact/v-prospectCompany.dwl" variableName="prospectCompany" />
+								<ee:set-variable resource="dwl/lead/v-prospectCompany.dwl" variableName="prospectCompany" />
 							</ee:variables>
 						</ee:transform>
-						<choice doc:name="Choice" doc:id="f3623625-c084-44f1-b545-09308b095cb4" >
+						<choice doc:name="Number of Prospect company ?" doc:id="f3623625-c084-44f1-b545-09308b095cb4" >
 							<when expression="#[sizeOf(vars.prospectCompany) &gt;0]">
 								<logger level="INFO" doc:name="Info Log" doc:id="c456cec1-0888-4dd1-84a4-2b79aff3366a" message=" Prospect Company Found , Now looking for Having Max Deal Company" />
 								<ee:transform doc:name="dealCompany" doc:id="37251b40-63a1-4fc6-ac81-c7f198991fab">
 											<ee:message>
 											</ee:message>
 									<ee:variables >
-										<ee:set-variable resource="dwl-lead-contact/v-dealCompany.dwl" variableName="dealCompany" />
+										<ee:set-variable resource="dwl/lead/v-dealCompany.dwl" variableName="dealCompany" />
 									</ee:variables>
 										</ee:transform>
-								<choice doc:name="Choice" doc:id="8b920284-f962-433e-b401-a131588a774b" >
+								<choice doc:name="Is deal company ?" doc:id="8b920284-f962-433e-b401-a131588a774b" >
 									<when expression="#[sizeOf(vars.dealCompany)&gt;0]">
 <!-- [STUDIO:"check max ass deal"]										<logger level="INFO" doc:name="check max ass deal" doc:id="cd78bcfb-cea0-41db-b572-d61948c1ba88" /> [STUDIO] -->
 										<ee:transform doc:name="companyId" doc:id="b3fb8d40-8633-4174-a465-2a889402c405" >
 											<ee:message >
 											</ee:message>
 											<ee:variables >
-												<ee:set-variable resource="dwl-lead-contact/v-set-companyId-4.dwl" variableName="companyId" />
+												<ee:set-variable resource="dwl/lead/v-set-companyId-4.dwl" variableName="companyId" />
 											</ee:variables>
 										</ee:transform>
 									</when>
@@ -356,7 +354,7 @@ payload.OwnerId]]></ee:set-variable>
 										<ee:transform doc:name="companyId" doc:id="cfa92a5a-e064-417e-a23d-a8d3dde43d01" >
 											<ee:message />
 											<ee:variables >
-												<ee:set-variable resource="dwl-lead-contact/v-set-companyId-5.dwl" variableName="companyId" />
+												<ee:set-variable resource="dwl/lead/v-set-companyId-5.dwl" variableName="companyId" />
 											</ee:variables>
 										</ee:transform>
 									</otherwise>
@@ -368,7 +366,7 @@ payload.OwnerId]]></ee:set-variable>
 									<ee:message >
 									</ee:message>
 									<ee:variables >
-										<ee:set-variable resource="dwl-lead-contact/v-set-companyId-6.dwl" variableName="companyId" />
+										<ee:set-variable resource="dwl/lead/v-set-companyId-6.dwl" variableName="companyId" />
 									</ee:variables>
 								</ee:transform>
 							</otherwise>
@@ -382,19 +380,19 @@ payload.OwnerId]]></ee:set-variable>
 					<ee:message >
 					</ee:message>
 					<ee:variables >
-						<ee:set-variable resource="dwl-lead-contact/v-set-companyId-7.dwl" variableName="companyId" />
+						<ee:set-variable resource="dwl/lead/v-set-companyId-7.dwl" variableName="companyId" />
 					</ee:variables>
 				</ee:transform>
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Log Completed" doc:id="6c78bd32-6ae2-4ff5-b51a-7b30567080ca" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-company-validation&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	</flow>
-	<flow name="lead-sf-to-contact-hs-update-Flow" doc:id="87ae5e85-88a3-435a-afc8-5fab1f9c4260" >
+	<flow name="lead-sf-to-contact-hs-update-flow" doc:id="87ae5e85-88a3-435a-afc8-5fab1f9c4260" >
 		<logger level="INFO" doc:name="Log Started" doc:id="cba73cd5-6695-419e-b451-c0c478fe362c" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;lead-sf-to-contact-hs-update-Flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<ee:transform doc:name="Mapping" doc:id="eab3ac7a-17b2-4bbf-95c5-a29ae14557e2">
 				<ee:message />
 				<ee:variables>
-				<ee:set-variable resource="dwl-lead-contact/v-mapping-for-update.dwl" variableName="requestPayloadForContact" />
+				<ee:set-variable resource="dwl/lead/v-mapping-for-update.dwl" variableName="requestPayloadForContact" />
 				</ee:variables>
 			</ee:transform>
 		<http:request method="POST" doc:name="Request to update contact" doc:id="38fa30c4-e478-43ea-a977-757217f0a149" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/update" sendCorrelationId="ALWAYS">
@@ -414,7 +412,7 @@ payload.OwnerId]]></ee:set-variable>
 					<ee:message>
 					</ee:message>
 					<ee:variables>
-				<ee:set-variable resource="dwl-lead-contact/v-mapping-for-create-contact.dwl" variableName="requestPayloadForContact" />
+				<ee:set-variable resource="dwl/lead/v-mapping-for-create-contact.dwl" variableName="requestPayloadForContact" />
 					</ee:variables>
 				</ee:transform>
 		<http:request method="POST" doc:name="Request to create contact" doc:id="1f142d0d-1e3c-4c74-9fe4-e66f7bc5df36" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/contact/create" target="hsContactDeatails" sendCorrelationId="ALWAYS">

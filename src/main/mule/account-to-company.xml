@@ -8,81 +8,74 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
-	<flow name="account-to-companyFlow" doc:id="52d145fd-6bc3-42b3-8dc4-c83c5bb78067" >
-		<salesforce:modified-object-listener objectType="Account" doc:name="On Modified Object" doc:id="8bc23034-e912-443e-851c-1b2d2abe6f4f" config-ref="Salesforce_Config" since="${salesforce.since}">
+	<flow name="account-to-company-flow" doc:id="52d145fd-6bc3-42b3-8dc4-c83c5bb78067" >
+		<salesforce:modified-object-listener objectType="Account" doc:name="On Modified Object Account" doc:id="8bc23034-e912-443e-851c-1b2d2abe6f4f" config-ref="Salesforce_Config" since="${salesforce.since}">
 			<scheduling-strategy>
 				<fixed-frequency />
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="8005ae3f-4726-4f5f-a7d4-cabeeb2a55b1" >
+		<choice doc:name="Is Updated by Integration User?" doc:id="8005ae3f-4726-4f5f-a7d4-cabeeb2a55b1" >
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]" >
-				<flow-ref doc:name="Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="65192664-950c-4a8a-9810-1a8211176bd6" name="sfdc-account-to-company-hubspotFlow" />
+				<flow-ref doc:name="Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="65192664-950c-4a8a-9810-1a8211176bd6" name="sfdc-account-to-company-hubspot-flow" />
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="b60eed22-c15f-422c-8094-f0a66121f55d" message='"Last Updated by Integration User"' />
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="62f6871d-6585-47db-9810-390bf6e95a15" >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate - ANY" doc:id="62f6871d-6585-47db-9810-390bf6e95a15" type="ANY">
 				<ee:transform doc:name="Set Error Payload" doc:id="1f0c13c2-dc10-4205-90f8-9c7676d18f64" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": error.errorMessage.typedValue default error.description
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl/account/msg-error-payload.dwl" />
 					</ee:message>
 				</ee:transform>
 				<logger level="ERROR" doc:name="Log Error" doc:id="63c8f8fe-5780-435e-b090-639f58d9b715" message="#[payload]" />
 			</on-error-propagate>
 		</error-handler>
 	</flow>
-	<flow name="sfdc-account-to-company-hubspotFlow" doc:id="f452b1aa-2c45-4232-a489-3f597cf3169f" initialState="started">
+	<flow name="sfdc-account-to-company-hubspot-flow" doc:id="f452b1aa-2c45-4232-a489-3f597cf3169f" initialState="started">
 		<logger level="INFO" doc:name="Log Started" doc:id="b9f97dd6-0f3f-4b8e-84ce-a701a4183a2c" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Account to HS Company flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
 		<ee:transform doc:name="Mapping for sf - hs" doc:id="b000efbd-4821-4af7-9b8c-2dd495493f04">
 			<ee:message>
 			</ee:message>
 			<ee:variables>
-				<ee:set-variable variableName="ownerId"><![CDATA[%dw 2.0
-output application/json
----
-payload.OwnerId]]></ee:set-variable>
-				<ee:set-variable variableName="inputPayload"><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-variable>
 				<ee:set-variable resource="dwl/account/v-inboundMappingPayload.dwl" variableName="mappingPayload" />
+				<ee:set-variable resource="dwl/account/var-inputPayload.dwl" variableName="inputPayload" />
+				<ee:set-variable resource="dwl/account/var-ownerId.dwl" variableName="ownerId" />
 			
 
 </ee:variables>
 		</ee:transform>
-		<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
-		<choice doc:name="Choice" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897" >
+		<choice doc:name="Is Company Domain ?" doc:id="d96f2db9-2191-4545-a298-fe75e6e984fc" >
+			<when expression="#[!isEmpty(payload.Company_Domain__c)]">
+				<flow-ref doc:name="Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="c5d5a45b-4a53-4350-b5c9-2793e32256e3" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
+				<choice doc:name="Is Hs Company Id present ?" doc:id="c1fedb63-bbcc-4ba2-bb75-505751874897">
 			<when expression="#[vars.inputPayload.Hubspot_Company_ID__c != null]">
-				<logger level="INFO" doc:name="Update Company" doc:id="58d12bb2-7ec1-41e7-97f8-c23a2b2413f7" message="Update Company"/>
+				<logger level="INFO" doc:name="Update Company" doc:id="58d12bb2-7ec1-41e7-97f8-c23a2b2413f7" message="Update Company" />
 				<ee:transform doc:name="Set CompanyId" doc:id="5ae6d867-01c3-4aa4-bc80-78cae3295a46">
 					<ee:message>
 					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
-output application/json
----
-vars.inputPayload.Hubspot_Company_ID__c]]></ee:set-variable>
+					<ee:variables>
+								<ee:set-variable resource="dwl/account/var-comapanyId.dwl" variableName="companyId" />
 					</ee:variables>
 				</ee:transform>
-				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="1631ccfd-decc-477b-827f-86d73c483971" name="update-company-in-hs"/>
+				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="1631ccfd-decc-477b-827f-86d73c483971" name="update-company-in-hs" />
 			</when>
-			<otherwise >
-				<flow-ref doc:name="Flow Reference company-check-subflow" doc:id="3ee19c39-7918-4b27-9bc1-02e618a47a9d" name="company-check-subflow"/>
+			<otherwise>
+				<flow-ref doc:name="Flow Reference company-check-subflow" doc:id="3ee19c39-7918-4b27-9bc1-02e618a47a9d" name="company-check-subflow" />
 			
 </otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log Company_Domain__c = null" doc:id="d533d1f1-89ac-4a4b-904a-7e5bd8333ce7" message="Company_Domain__c is Empty"/>
+			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Log Completed" doc:id="e0418c66-e798-4088-a37a-f41af3625898" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;SF Account to HS Company flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	
 
 </flow>
-	<flow name="accountId-to-companyId-Flow" doc:id="2807bce8-5fb5-4fae-9e30-d14800d353ea" >
+	<flow name="accountid-to-companyid-flow" doc:id="2807bce8-5fb5-4fae-9e30-d14800d353ea" >
 		<http:request method="GET" doc:name="Request to Get Account Details" doc:id="805c35d9-e093-4cc2-a238-cd7d83799e18" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/{id}" targetValue="#[payload[0]]" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
@@ -92,31 +85,22 @@ vars.inputPayload.Hubspot_Company_ID__c]]></ee:set-variable>
 		</http:request>
 		<ee:transform doc:name="Set Response Payload" doc:id="9591f001-417f-4e7b-9771-e70ad2f30142" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload[0]]]></ee:set-payload>
+				<ee:set-payload resource="dwl/account/msg-account-details.dwl" />
 			</ee:message>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="83e742b6-1e34-48d2-86f2-0cbefe796126" >
+		<choice doc:name="Is HS companyId present ?" doc:id="83e742b6-1e34-48d2-86f2-0cbefe796126" >
 			<when expression="#[payload.Hubspot_Company_ID__c != null]">
 				<ee:transform doc:name="Set companyId" doc:id="841febf3-a072-461f-a1a2-011ff96e9ad9">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-payload.Hubspot_Company_ID__c]]></ee:set-payload>
+						<ee:set-payload resource="dwl/account/msg-hubspot-companyId.dwl" />
 			</ee:message>
 		</ee:transform>
 			</when>
 			<otherwise >
-				<flow-ref doc:name="Flow Reference sfdc-account-to-company-hubspotFlow" doc:id="77319993-3d95-43b1-bc06-704f852569f0" name="sfdc-account-to-company-hubspotFlow" />
+				<flow-ref doc:name="Flow Reference sfdc-account-to-company-hubspotFlow" doc:id="77319993-3d95-43b1-bc06-704f852569f0" name="sfdc-account-to-company-hubspot-flow" />
 				<ee:transform doc:name="Set companyId" doc:id="50a662b1-3585-4480-b1d4-9ce1f034fd32" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-vars.companyId]]></ee:set-payload>
+						<ee:set-payload resource="dwl/account/msg-companyId.dwl" />
 					</ee:message>
 				</ee:transform>
 			</otherwise>
@@ -144,7 +128,7 @@ output application/json
 					<http:query-params><![CDATA[#[output application/java
 ---
 {
-	domain : payload.Company_Domain__c
+	domain : payload.Company_Domain__c default ""
 }]]]></http:query-params>
 				</http:request>
 		<ee:transform doc:name="Find CompanyId from HS on the basis of lifecycle stage and last modified date" doc:id="bbd6aa5d-3a41-4b7f-bcb2-9735b8d9c491" >
@@ -155,7 +139,7 @@ output application/json
 			
 </ee:variables>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="b4a91e20-9790-4835-a617-f274ff2fe91b" >
+		<choice doc:name="Is companyId null?" doc:id="b4a91e20-9790-4835-a617-f274ff2fe91b" >
 			<when expression="#[vars.companyId != null]">
 				<logger level="INFO" doc:name="UPDATE company" doc:id="9b5297d8-a813-4acc-91b9-a50eefdc2b81" message="UPDATE company"/>
 				<flow-ref doc:name="Flow Reference to update-company-in-hs" doc:id="67894f83-ce26-44a0-b0ac-d84ae2bbdce6" name="update-company-in-hs"/>
@@ -186,18 +170,7 @@ output application/json
 		</ee:transform>
 		<ee:transform doc:name="Set Payload as per HS Sapi" doc:id="8cacce91-9832-4464-8955-21292c05be58">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
-// data = vars.mappingPayload //++ {"hubspot_company_id__c": vars.companyId}
----
-{
-  "properties": payload pluck ( 
-    { 
-        "name": $$,
-        "value": $
-    }
-  )
-}]]></ee:set-payload>
+				<ee:set-payload resource="dwl/account/msg-desire-format-for-create-company.dwl" />
 			</ee:message>
 		</ee:transform>
 		<http:request method="POST" doc:name="Request HS Sapi to Create Company" doc:id="e2db84e2-5988-494e-be54-b5908e289731" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/create" target="createdCompany" sendCorrelationId="ALWAYS">
@@ -207,10 +180,7 @@ output application/json
 			<ee:message >
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="companyId" ><![CDATA[%dw 2.0
-output application/json
----
-vars.createdCompany.companyId]]></ee:set-variable>
+				<ee:set-variable resource="dwl/account/var-created-company-id.dwl" variableName="companyId" />
 			</ee:variables>
 		</ee:transform>
 		<http:request method="POST" doc:name="Request to sf sapi to sync back HS companyID" doc:id="02c7be39-9f6b-46fc-b521-17f4f2fca70f" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/account/update" sendCorrelationId="ALWAYS" target="syncBackId">
@@ -221,7 +191,7 @@ output application/json
 	"Id":vars.inputPayload.Id
 }]]]]></http:body>
 		</http:request>
-		<logger level="INFO" doc:name="Logger" doc:id="17b854d6-3d23-4eb4-9014-63ef51c499e9" message='#[{"Hubspot_Company_ID__c": vars.companyId,&#10;	"Account Id":vars.inputPayload.Id,&#10;	"Message" : "Company Created in Hubspot"&#10;}]'/>
+		<logger level="INFO" doc:name="Info Log" doc:id="17b854d6-3d23-4eb4-9014-63ef51c499e9" message='#[{"Hubspot_Company_ID__c": vars.companyId,&#10;	"Account Id":vars.inputPayload.Id,&#10;	"Message" : "Company Created in Hubspot"&#10;}]'/>
 	</sub-flow>
 	<sub-flow name="update-company-in-hs" doc:id="a270043a-2743-4aa6-8be5-b960740643e3" >
 		<logger level="INFO" doc:name="Update company later proceed" doc:id="812fff2d-7728-4cfb-a171-fd5389aefec8" message="update company flow started"/>
@@ -233,18 +203,7 @@ output application/json
 		</ee:transform>
 		<ee:transform doc:name="Set Payload as per HS Sapi" doc:id="47002f3e-0d2b-45fc-a491-b4353d076804" >
 			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
-// data = vars.mappingPayload //++ {"hubspot_company_id__c": vars.companyId}
----
-{
-  "properties": payload pluck ( 
-    { 
-        "name": $$,
-        "value": $
-    }
-  )
-}]]></ee:set-payload>
+				<ee:set-payload resource="dwl/account/msg-desire-format-for-company.dwl" />
 			</ee:message>
 		</ee:transform>
 		<http:request method="POST" doc:name="Request HS Sapi to Update Company" doc:id="6e47af46-0010-4810-8bcc-b3698b2a1c5a" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/company/update" sendCorrelationId="ALWAYS">

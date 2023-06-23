@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_a670c79a_d74a_40ee_b1c0_0e4dc04bb441_Output_Variables_ownerId = Any
+

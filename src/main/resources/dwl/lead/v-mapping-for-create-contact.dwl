@@ -77,7 +77,7 @@ var picklist = readUrl("classpath://picklist.json", "application/json")
     },
     {
       "property": "fax",
-      "value": payload.Fax default "MA"
+      "value": payload.Fax
     },
     {
       "property": "firstname",

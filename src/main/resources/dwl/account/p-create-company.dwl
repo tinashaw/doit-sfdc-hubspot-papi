@@ -29,7 +29,7 @@ var picklist = readUrl("classpath://picklist.json", "application/json")
 	"o365_revenue" : vars.inputPayload.O365_Revenue__c,
 	"phone" : vars.inputPayload.Phone,
 	"sfdc_account_id" : vars.inputPayload.Id,
-	"sfdc_became_a_former_customer" : vars.inputPayload.Became_a_Former_Customer__c,
+	("sfdc_became_a_former_customer" : vars.inputPayload.Became_a_Former_Customer__c as Date {format:"yyyy-MM-dd"} as String {format: "yyyy-MM-dd'T'00:00:00"} as DateTime as Number {unit: "milliseconds"}) if(vars.inputPayload.sfdc_became_a_former_customer != null),
 	"sfdc_segment" : vars.inputPayload.Segment__c,
 	"sfdc_sub_region" : vars.inputPayload.Sub_Region__c,
 	"state" : vars.inputPayload.Hubspot_State_Region__c,

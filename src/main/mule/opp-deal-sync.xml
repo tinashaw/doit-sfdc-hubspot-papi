@@ -8,31 +8,26 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
-	<flow name="opp-deal-syncFlow" doc:id="a24d6a91-64a3-480d-954e-c0b4da58b32e" >
-		<salesforce:modified-object-listener objectType="Opportunity" doc:name="On Modified Object" doc:id="d6ff8226-0691-4295-b418-e3f2324877e7" config-ref="Salesforce_Config" since="${salesforce.since}">
+	<flow name="opp-deal-sync-flow" doc:id="a24d6a91-64a3-480d-954e-c0b4da58b32e" >
+		<salesforce:modified-object-listener objectType="Opportunity" doc:name="On Modified Opportunity" doc:id="d6ff8226-0691-4295-b418-e3f2324877e7" config-ref="Salesforce_Config" since="${salesforce.since}">
 			<reconnect count="5" />
 			<scheduling-strategy>
 				<fixed-frequency />
 			</scheduling-strategy>
 		</salesforce:modified-object-listener>
-		<choice doc:name="Choice" doc:id="3075ebfc-15d1-4abb-8f1b-45a9cdf0c80d" >
+		<choice doc:name="Is Updated by Integration User?" doc:id="3075ebfc-15d1-4abb-8f1b-45a9cdf0c80d" >
 			<when expression="#[!(p('event.LastModifiedById') contains payload.LastModifiedById)]" >
 				<flow-ref doc:name="Flow Ref to sf-opp-to-hs-deal-flow" doc:id="3d683853-c144-4560-b9d6-9ea317810274" name="sf-opp-to-hs-deal-flow" />
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="eabb13c2-d573-4018-8842-ccf5805c5960" message='"No Appropriate Event"' />
+				<logger level="INFO" doc:name="Log 'Last Updated by Integration User'" doc:id="eabb13c2-d573-4018-8842-ccf5805c5960" message='"Last Updated by Integration User"' />
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate" doc:id="31ede04f-11ec-4399-a75d-853933250def" >
+			<on-error-propagate enableNotifications="false" logException="false" doc:name="On Error Propagate-ANY" doc:id="31ede04f-11ec-4399-a75d-853933250def" type="ANY">
 				<ee:transform doc:name="Set Error Payload" doc:id="5e1435ea-1070-4700-8b13-9d9bf036a2f3" >
 					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	"message": error.errorMessage.typedValue default error.description
-}]]></ee:set-payload>
+						<ee:set-payload resource="dwl/error/p-error-message.dwl" />
 					</ee:message>
 				</ee:transform>
 				<logger level="ERROR" doc:name="Log Error" doc:id="007a33e3-ca8d-41ce-a691-3c8c726ef16a" message="#[payload]" />
@@ -51,16 +46,16 @@ output application/json
 			
 </ee:variables>
 		</ee:transform>
-		<http:request method="GET" doc:name="Request for RecordTypeName" doc:id="6052f98c-8510-4d40-8d48-2371bb667596" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/getRecordTypeName/{recordTypeId}" target="recordTypeName" responseTimeout="-1" targetValue="#[payload[0].Name]">
+		<http:request method="GET" doc:name="Request for RecordTypeName" doc:id="6052f98c-8510-4d40-8d48-2371bb667596" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/getRecordTypeName/{recordTypeId}" target="recordTypeName" responseTimeout="-1" targetValue="#[payload[0].Name]" sendCorrelationId="ALWAYS">
 			<http:uri-params ><![CDATA[#[output application/java
 ---
 {
 	recordTypeId : vars.id.RecordTypeId
 }]]]></http:uri-params>
 		</http:request>
-		<choice doc:name="Choice" doc:id="4cf049b9-9d98-4947-9886-7333252bdcd5">
+		<choice doc:name="Is BDR Name ?" doc:id="4cf049b9-9d98-4947-9886-7333252bdcd5">
 			<when expression="#[vars.id.BDR_Created_By__c != null]">
-				<http:request method="GET" doc:name="Request to get BDR Name" doc:id="2c3c3a66-cfd6-4865-aa64-4621b9995cda" config-ref="HTTP_Request_configuration_salesforce_sapi" target="nameBDR_Created_By__c_" path="/user/id" targetValue="#[payload[0].Name]" responseTimeout="-1">
+				<http:request method="GET" doc:name="Request to get BDR Name" doc:id="2c3c3a66-cfd6-4865-aa64-4621b9995cda" config-ref="HTTP_Request_configuration_salesforce_sapi" target="nameBDR_Created_By__c_" path="/user/id" targetValue="#[payload[0].Name]" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<http:query-params><![CDATA[#[output application/java
 ---
 {
@@ -69,10 +64,10 @@ output application/json
 		</http:request>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="d77b0dca-43d6-483f-be6d-adc683574101" />
+				<logger level="INFO" doc:name="Info Log" doc:id="d77b0dca-43d6-483f-be6d-adc683574101" message="BDR_Created_By__c Not Present"/>
 			</otherwise>
 		</choice>
-		<flow-ref doc:name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" doc:id="85f58a19-8e58-42d3-8491-61841a301e46" name="fetch-ownerId-for-salesforce-to-hubspotFlowFlow" target="ownerId" />
+		<flow-ref doc:name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="85f58a19-8e58-42d3-8491-61841a301e46" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />
 		<ee:transform doc:name="UPDATE: requestPayloadForDeal" doc:id="3aae812f-330c-4fd4-a0dd-3d4cc6fa0e14" >
 			<ee:message >
 			</ee:message>
@@ -80,10 +75,15 @@ output application/json
 				<ee:set-variable resource="dwl/v-updated-requestPayloadForDeal.dwl" variableName="requestPayloadForDeal" />
 			</ee:variables>
 		</ee:transform>
-		<choice doc:name="Choice" doc:id="2d56a0a0-42fc-4fe3-bcde-f9872f84038e">
+		<flow-ref doc:name="Flow Ref sf-opp-to-hs-deal-sub-flow" doc:id="d51be62b-9b44-48ab-82a2-9f5c3372fc93" name="sf-opp-to-hs-deal-sub-flow"/>
+		<logger level="INFO" doc:name="Log Completed" doc:id="78935fec-f32b-4c07-8050-3951853ab46d" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;sf-opp-to-hs-deal-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]"/>
+	
+</flow>
+	<sub-flow name="sf-opp-to-hs-deal-sub-flow" doc:id="70cbaefe-dd4c-44f7-aa76-0a71286fe3f9" >
+		<choice doc:name="Is Hubspot_ID__c ?" doc:id="2d56a0a0-42fc-4fe3-bcde-f9872f84038e">
 				<when expression="#[vars.id.Hubspot_ID__c != null]">
-				<try doc:name="Try" doc:id="7511aa32-648c-47a0-9b2f-fff8caa42b2c">
-			<http:request method="GET" doc:name="Get Deal" doc:id="c802cffb-0d6f-422b-85d5-e6a030267d5d" path="/deal/{dealId}" config-ref="HTTP_Request_configuration_hubspot_sapi" responseTimeout="-1">
+				<try doc:name="lookup for deal" doc:id="7511aa32-648c-47a0-9b2f-fff8caa42b2c">
+			<http:request method="GET" doc:name="Get Deal" doc:id="c802cffb-0d6f-422b-85d5-e6a030267d5d" path="/deal/{dealId}" config-ref="HTTP_Request_configuration_hubspot_sapi" responseTimeout="-1" sendCorrelationId="ALWAYS">
 			<http:uri-params><![CDATA[#[output application/java
 ---
 {
@@ -91,7 +91,7 @@ output application/json
 	}]]]></http:uri-params>
 		</http:request>
 			<error-handler>
-				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="d8da591f-3a71-4aa3-a10e-a78a4452c249" type="HTTP:INTERNAL_SERVER_ERROR, HTTP:NOT_FOUND">
+				<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue-HTTP:INTERNAL_SERVER_ERROR, HTTP:NOT_FOUND" doc:id="d8da591f-3a71-4aa3-a10e-a78a4452c249" type="HTTP:INTERNAL_SERVER_ERROR, HTTP:NOT_FOUND">
 					<logger level="INFO" doc:name="Info Log" doc:id="015be1d5-e7f2-4c5b-a41a-67c7310c5d5c" message="#[error.muleMessage.payload.message]" />
 					<ee:transform doc:name="isDeal" doc:id="232e3edb-4c18-49ae-bd06-8c371fb0370a">
 						<ee:message>
@@ -105,29 +105,57 @@ output application/json
 			</error-handler>
 		</try>
 				</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Lof Info" doc:id="79734b92-b1d9-46b3-b5f6-af3787b86f89" message="Hubspot DealId not Present on Salesforce Opportunity"/>
+			<otherwise>
+				<logger level="INFO" doc:name="Lof Info" doc:id="79734b92-b1d9-46b3-b5f6-af3787b86f89" message="Hubspot DealId not Present on Salesforce Opportunity" />
 			</otherwise>
 			</choice>
-		<choice doc:name="Choice" doc:id="821f5c6c-c664-4822-8d93-60a25c246984">
+		<choice doc:name="update or create ?" doc:id="821f5c6c-c664-4822-8d93-60a25c246984">
 			<when expression='#[vars.isDeal=="Deal does not exist" or vars.id.Hubspot_ID__c== null]'>
-				<flow-ref doc:name="opp-sf-to-deal-hs-get-companyId-by-accountId-Flow" doc:id="d255364a-bdc6-46b5-961c-cb7adbaa87a2" name="opp-sf-to-deal-hs-get-companyId-by-accountId-Flow" />
-				<choice doc:name="Choice" doc:id="65bc00fc-d9c2-4b81-ae6a-92ad727b41ba">
+				<flow-ref doc:name="Flow Ref opp-deal-sync-create-sub-flow" doc:id="e9a6ff0f-7df2-413d-bd9d-33af568b2306" name="opp-deal-sync-create-sub-flow" />
+			
+</when>
+			<otherwise>
+				<flow-ref doc:name="Flow Ref opp-deal-sync-update-sub-flow" doc:id="2856c4a8-525e-4813-8904-6081ab138417" name="opp-deal-sync-update-sub-flow" />
+			
+</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="opp-deal-sync-update-sub-flow" doc:id="299a2fb2-7eb9-40f5-a080-d8e6705e5c89" >
+		<ee:transform doc:name="Mapping" doc:id="11ed824a-c433-40ba-b784-627e7780d949">
+					<ee:message />
+					<ee:variables>
+						<ee:set-variable resource="dwl/-v-desirePayloadForUpdate.dwl" variableName="desirePayloadForUpdate" />
+					</ee:variables>
+				</ee:transform>
+		<http:request method="PUT" doc:name="Request to Update Deal" doc:id="2ef3e276-0eb8-4f2d-b221-bfb7b7b9af50" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/update/{dealId}" responseTimeout="-1" sendCorrelationId="ALWAYS">
+					<reconnect count="5" />
+					<http:body><![CDATA[#[vars.desirePayloadForUpdate]]]></http:body>
+					<http:uri-params><![CDATA[#[output application/java
+---
+{
+	dealId : vars.id.Hubspot_ID__c
+}]]]></http:uri-params>
+				</http:request>
+		<logger level="INFO" doc:name="Info Log" doc:id="d68d62ca-c95d-4aab-8eba-76afa6c130b5" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"Deal Id" : payload.dealId,&#10;	"Deal Name": payload.properties.dealname.value,&#10;	"Message": "Deal Successfully Updated"&#10;}]' />
+	</sub-flow>
+	<sub-flow name="opp-deal-sync-create-sub-flow" doc:id="e2f5f26b-2a7c-4ff2-9fdb-5e223383e076" >
+		<flow-ref doc:name="opp-sf-to-deal-hs-get-companyId-by-accountId-Flow" doc:id="d255364a-bdc6-46b5-961c-cb7adbaa87a2" name="opp-sf-to-deal-hs-get-companyid-by-accountid-flow" />
+		<choice doc:name="Is ContactId  null ?" doc:id="65bc00fc-d9c2-4b81-ae6a-92ad727b41ba">
 					<when expression="#[vars.id.ContactId != null]">
-						<try doc:name="Try" doc:id="307d6c02-cf75-4541-a5db-b5a798811ce3">
-					<flow-ref doc:name="opp-deal-sync-contact-Sub_Flow" doc:id="0d3eb9d4-d299-48c1-846d-2600619061dc" name="opp-deal-sync-contact-Sub_Flow" />
+						<try doc:name="Try to fetch HS contact Vid" doc:id="307d6c02-cf75-4541-a5db-b5a798811ce3">
+					<flow-ref doc:name="opp-deal-sync-opportunity-contact-role-flow" doc:id="0d3eb9d4-d299-48c1-846d-2600619061dc" name="opp-deal-sync-opportunity-contact-role-flow" />
 					<error-handler>
-						<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="de2b03ce-e2c8-45e9-a7a4-ab6591cad8be">
+						<on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue-ANY" doc:id="de2b03ce-e2c8-45e9-a7a4-ab6591cad8be" type="ANY">
 							<logger level="INFO" doc:name="Info Log" doc:id="17122f51-f9d3-4cf1-a307-c9c9f68417ac" message='#["ERROR": "Error related to associated Contact of Opportunity "]' />
 						</on-error-continue>
 					</error-handler>
 				</try>
 					</when>
-					<otherwise >
-						<logger level="INFO" doc:name="Info Lof" doc:id="9f3967c3-ba9b-4ce8-8665-64d42cf117cf" message="Associate ContactId Not Present"/>
+					<otherwise>
+						<logger level="INFO" doc:name="Info Lof" doc:id="9f3967c3-ba9b-4ce8-8665-64d42cf117cf" message="Associate ContactId Not Present" />
 					</otherwise>
 				</choice>
-				<ee:transform doc:name="Mapping" doc:id="fd620a46-ecb5-4c73-b038-422201786a49">
+		<ee:transform doc:name="Mapping" doc:id="fd620a46-ecb5-4c73-b038-422201786a49">
 			<ee:message>
 			</ee:message>
 			<ee:variables>
@@ -135,11 +163,14 @@ output application/json
 			
 </ee:variables>
 		</ee:transform>
-				<http:request method="POST" doc:name="Request to Create Deal" doc:id="f8119788-397c-41c3-8f7c-f35ed8c80919" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/create" target="createdResponse">
-					<http:body ><![CDATA[#[vars.desirePayloadForCreate]]]></http:body>
+		<http:request method="POST" doc:name="Request to Create Deal" doc:id="f8119788-397c-41c3-8f7c-f35ed8c80919" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/create" target="createdResponse" sendCorrelationId="ALWAYS">
+					<http:body><![CDATA[#[vars.desirePayloadForCreate]]]></http:body>
 				</http:request>
-				<logger level="INFO" doc:name="Info Log" doc:id="7b0c9c00-399f-4828-ba40-0136169fbc67" message="Deal Created in Hubspot with dealId #[vars.createdResponse.dealId]"/>
-				<ee:transform doc:name="Transform Message" doc:id="ddb57b8f-71fc-4256-93df-7b750b552705">
+		<logger level="INFO" doc:name="Info Log" doc:id="7b0c9c00-399f-4828-ba40-0136169fbc67" message="Deal Created in Hubspot with dealId #[vars.createdResponse.dealId]" />
+		<flow-ref doc:name="Flow Ref opp-deal-sync-back-sub-flow" doc:id="5f70cc40-8afb-4390-b34b-5849624ee320" name="opp-deal-sync-back-sub-flow"/>
+	</sub-flow>
+	<sub-flow name="opp-deal-sync-back-sub-flow" doc:id="39d403f8-442b-4b55-ba32-ccc7e75aeeb3" >
+		<ee:transform doc:name="Set syncBack payload" doc:id="ddb57b8f-71fc-4256-93df-7b750b552705">
 					<ee:message>
 						<ee:set-payload resource="dwl/-p-payload-created-reponse.dwl" />
 					</ee:message>
@@ -147,38 +178,14 @@ output application/json
 						<ee:set-variable resource="dwl/-v-updateDealId.dwl" variableName="updateDealId" />
 					</ee:variables>
 				</ee:transform>
-				<http:request method="POST" doc:name="Request to Update DealId on SF" doc:id="8154d093-b55a-4721-837b-b35dd6737854" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/update">
-					<http:body ><![CDATA[#[vars.updateDealId]]]></http:body>
+		<http:request method="POST" doc:name="Request to Update DealId on SF" doc:id="8154d093-b55a-4721-837b-b35dd6737854" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/opportunity/update" sendCorrelationId="ALWAYS">
+					<http:body><![CDATA[#[vars.updateDealId]]]></http:body>
 				</http:request>
-				<logger level="INFO" doc:name="Info Log" doc:id="b1c0d6dd-6e4d-4176-8f78-41a1c2f8c490" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"Deal Id" : vars.createdResponse.dealId,&#10;	"Deal Name": vars.createdResponse.properties.dealname.value,&#10;	"Message": "Deal Successfully Created and Synced-Back"&#10;}]'/>
-			
-</when>
-			<otherwise>
-				<ee:transform doc:name="Mapping" doc:id="11ed824a-c433-40ba-b784-627e7780d949">
-					<ee:message />
-					<ee:variables>
-						<ee:set-variable resource="dwl/-v-desirePayloadForUpdate.dwl" variableName="desirePayloadForUpdate" />
-					</ee:variables>
-				</ee:transform>
-				<http:request method="PUT" doc:name="Request to Update Deal" doc:id="2ef3e276-0eb8-4f2d-b221-bfb7b7b9af50" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/update/{dealId}" responseTimeout="-1">
-					<reconnect count="5" />
-					<http:body ><![CDATA[#[vars.desirePayloadForUpdate]]]></http:body>
-					<http:uri-params ><![CDATA[#[output application/java
----
-{
-	dealId : vars.id.Hubspot_ID__c
-}]]]></http:uri-params>
-				</http:request>
-				<logger level="INFO" doc:name="Logger" doc:id="d68d62ca-c95d-4aab-8eba-76afa6c130b5" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"Deal Id" : payload.dealId,&#10;	"Deal Name": payload.properties.dealname.value,&#10;	"Message": "Deal Successfully Updated"&#10;}]'/>
-			
-</otherwise>
-		</choice>
-		<logger level="INFO" doc:name="Log Completed" doc:id="78935fec-f32b-4c07-8050-3951853ab46d" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;sf-opp-to-hs-deal-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]"/>
-	
-</flow>
-	<flow name="opp-sf-to-deal-hs-get-companyId-by-accountId-Flow" doc:id="e94dcacc-0d12-46f7-ad76-926f117a6320" >
+		<logger level="INFO" doc:name="Info Log" doc:id="b1c0d6dd-6e4d-4176-8f78-41a1c2f8c490" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"Deal Id" : vars.createdResponse.dealId,&#10;	"Deal Name": vars.createdResponse.properties.dealname.value,&#10;	"Message": "Deal Successfully Created and Synced-Back"&#10;}]' />
+	</sub-flow>
+	<flow name="opp-sf-to-deal-hs-get-companyid-by-accountid-flow" doc:id="e94dcacc-0d12-46f7-ad76-926f117a6320" >
 		<logger level="INFO" doc:name="Log Started" doc:id="19d76b0d-6959-4c2d-a528-0d1d3e815253" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-sf-to-deal-hs-get-companyId-by-accountId-Flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-		<flow-ref doc:name="Flow Reference account-to-companyFlow" doc:id="60269b8d-be8d-453a-bcc0-7efeed70d3df" name="accountId-to-companyId-Flow"/>
+		<flow-ref doc:name="Flow Ref accountid-to-companyid-flow" doc:id="60269b8d-be8d-453a-bcc0-7efeed70d3df" name="accountid-to-companyid-flow"/>
 		<ee:transform doc:name="Set companyId" doc:id="2b442bbb-f5c3-46b3-acf9-69af54181f1d" >
 			<ee:message >
 			</ee:message>
@@ -190,10 +197,42 @@ output application/json
 		<logger level="INFO" doc:name="Log Completed" doc:id="e44cb56e-8693-49b1-8018-38cbd62362f0" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-sf-to-deal-hs-get-companyId-by-accountId-Flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	
 </flow>
-	<sub-flow name="opp-deal-sync-contact-Sub_Flow" doc:id="6e1c1a47-e7e4-41d4-ba98-28870b4cb620" >
+	<sub-flow name="opp-deal-sync-opportunity-contact-role-flow" doc:id="b33945b1-d1a2-4b8f-b850-037a3e766aec" >
+		<http:request method="GET" doc:name="Request to get all contact of opportunity" doc:id="ceda4212-0719-482a-beb7-a631807541e8" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="oppAssociateContactIds" targetValue="#[payload.ContactId]" sendCorrelationId="ALWAYS" responseTimeout="-1">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT ContactId FROM OpportunityContactRole WHERE OpportunityId = '" ++ vars.id.OpportunityId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<parallel-foreach doc:name="Parallel For Each Associated Contact" doc:id="6f6ee511-47e9-48b7-af02-52665e64142b" collection="#[vars.oppAssociateContactIds]" target="oppAssociatedContactVids">
+			<ee:transform doc:name="Set oppAssociatedContactId" doc:id="db6e60db-816b-4465-b608-945bba6a45e0" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="oppAssociatedContactId" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Ref opp-deal-sync-contact-sub-flow" doc:id="152f74f7-56f8-4acf-8f93-afc8d521f927" name="opp-deal-sync-contact-sub-flow"/>
+		</parallel-foreach>
+		<ee:transform doc:name="Set Contact Vids" doc:id="cfff8aa2-01bf-4ec2-9679-34394c4a5413" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="contactVid" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.oppAssociatedContactVids.payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="opp-deal-sync-contact-sub-flow" doc:id="6e1c1a47-e7e4-41d4-ba98-28870b4cb620" >
 		<logger level="INFO" doc:name="Log Started" doc:id="49b8e176-ee94-4017-bdd4-4fb5330119dd" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-contact-Sub_Flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
-		<flow-ref doc:name="Flow Reference sf-contactId-to-hs-contact-vid-Flow" doc:id="3b427f01-054a-44c0-a315-997c0b24bd3c" name="sf-contactId-to-hs-contact-vid-Flow"/>
-		<ee:transform doc:name="Set contactId" doc:id="6a8917e1-d4d2-4189-945e-62043ef5f5da" >
+		<flow-ref doc:name="Flow Ref sf-contactid-to-hs-contact-vid-flow" doc:id="3b427f01-054a-44c0-a315-997c0b24bd3c" name="sf-contactid-to-hs-contact-vid-flow"/>
+<!-- [STUDIO:"Set contactId"]		<ee:transform doc:name="Set contactId" doc:id="6a8917e1-d4d2-4189-945e-62043ef5f5da" >
 			<ee:message >
 			</ee:message>
 			<ee:variables >
@@ -201,9 +240,76 @@ output application/json
 				<ee:set-variable resource="dwl/-v-set-contactId.dwl" variableName="contactId" />
 			
 </ee:variables>
-		</ee:transform>
+		</ee:transform> [STUDIO] -->
 		<logger level="INFO" doc:name="Info Log" doc:id="0a455ba1-8b9a-4d66-b6fb-4d75998cde46" message="Associated Contact Found with Vid  #[vars.contactId]" />
 		<logger level="INFO" doc:name="Log Completed" doc:id="c5bda239-4df0-4a51-8169-3420bbbe4c54" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-contact-Sub_Flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
 	
 </sub-flow>
+	<flow name="opp-deal-sync-opp-contact-role-association-flow" doc:id="b2adaeb5-9389-4e7b-b0ae-f94e4f7ad449" >
+		<salesforce:modified-object-listener objectType="OpportunityContactRole" doc:name="On Modified OpportunityContactRole" doc:id="2ff1db39-aaee-449a-976d-9dd9ce60556d" config-ref="Salesforce_Config" since="${salesforce.since}">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<logger level="INFO" doc:name="Log Started" doc:id="d68ac069-ea8f-425f-86ef-d495a9a10de0" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-oppContactRole-association-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="cc50b407-1355-4f88-b59e-b1c4ceeac1b2" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]" sendCorrelationId="ALWAYS">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_ID__c FROM Opportunity WHERE Id = '" ++ payload.OpportunityId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<http:request method="GET" doc:name="Request to get contact vid" doc:id="04872838-a6c8-4710-9ea3-c1895d70bcf9" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]" sendCorrelationId="ALWAYS">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_Contact_ID__c FROM Contact WHERE Id = '"++ payload.ContactId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Mapping" doc:id="8bbe5bce-94ff-47fa-8c5c-97f11c2611af">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dwl/var-mappedPayload-deal-associate.dwl" variableName="mappedPayload" />
+			</ee:variables>
+		</ee:transform>
+		<http:request method="PUT" doc:name="Request to associate deal" doc:id="e1179b34-b470-41f1-a72e-21be426e0470" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/associate" sendCorrelationId="ALWAYS">
+			<http:body><![CDATA[#[vars.mappedPayload]]]></http:body>
+		</http:request>
+		<logger level="INFO" doc:name="Info Log" doc:id="8aabe919-63a9-43a6-abbe-b4925e77b13d" message="Deal with dealId #[vars.dealId]  Associated with Contact #[vars.contactVid]" />
+		<logger level="INFO" doc:name="Log Completed" doc:id="1e16d9d9-3b4a-409b-b430-54e13ba3beed" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-oppContactRole-association-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
+	</flow>
+	<flow name="opp-deal-sync-opp-contact-role-deassociation-flow" doc:id="99350759-b742-4dd2-8f12-0237807c640d" >
+		<salesforce:deleted-object-listener objectType="OpportunityContactRole" doc:name="On Deleted OpportunityContactRole" doc:id="7da4168c-dbcd-4e62-943a-75f40f2a3df7" config-ref="Salesforce_Config" since="${salesforce.since}">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:deleted-object-listener>
+		<logger level="INFO" doc:name="Log Started" doc:id="4d79b11a-6966-4065-b354-14edd758341b" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-oppContactRole-deassociation-flow&quot;,&#10;  status: &quot;Started&quot;,&#10;  timestamp : now()&#10;}]" />
+		<http:request method="GET" doc:name="Request to get Deal Id" doc:id="b36c9590-0ae2-4b1b-b155-88b677f8de22" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="dealId" targetValue="#[payload.Hubspot_ID__c[0] as Number]" sendCorrelationId="ALWAYS">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_ID__c FROM Opportunity WHERE Id = '" ++ payload.OpportunityId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<http:request method="GET" doc:name="Request to get contact vid" doc:id="3f101ee6-54a9-4632-9c78-5e131e0a6c74" config-ref="HTTP_Request_configuration_salesforce_sapi" path="/genericquery" target="contactVid" targetValue="#[payload.Hubspot_Contact_ID__c[0]]" sendCorrelationId="ALWAYS">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	querytobeexecuted : "SELECT Hubspot_Contact_ID__c FROM Contact WHERE Id = '"++ payload.ContactId ++ "'"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Mapping" doc:id="7ed99f60-a693-4fd9-9b92-cdd0ceec1909" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable resource="dwl/var-mappedPayload-deal-deassociate.dwl" variableName="mappedPayload" />
+			</ee:variables>
+		</ee:transform>
+<http:request method="PUT" doc:name="Request to deassociate deal" doc:id="7e9f86fe-d2bc-4814-98ab-52be0c43d131" config-ref="HTTP_Request_configuration_hubspot_sapi" path="/deal/deassociate" sendCorrelationId="ALWAYS">
+			<http:body ><![CDATA[#[vars.mappedPayload]]]></http:body>
+		</http:request>
+		<logger level="INFO" doc:name="Info Log" doc:id="aa28e707-ff80-4c6d-aa88-1a3405ea5668" message="Deal with dealId #[vars.dealId]  Deassociated with Contact #[vars.contactVid]" />
+		<logger level="INFO" doc:name="Log Completed" doc:id="4aa4c2f2-b6ea-4e9d-ba1f-eeeb654c54be" message="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  env : Mule::p('env'),&#10;  transactionId : correlationId,&#10;  applicationName : Mule::p('app.name'),&#10;  flowName : &quot;opp-deal-sync-oppContactRole-deassociation-flow&quot;,&#10;  status: &quot;Completed&quot;,&#10;  timestamp : now()&#10;}]" />
+	</flow>
 </mule>

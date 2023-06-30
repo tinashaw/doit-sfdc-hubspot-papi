@@ -1,3 +1,7 @@
+env: "local"
+app:
+  name: "doit-sfdc-hubspot-papi-dev"
+  
 api:
   host: "0.0.0.0"
   port: "8083"
@@ -7,15 +11,17 @@ api:
 salesforce:
   token_endpoint: ""
   audience_url: "https://test.salesforce.com"
-  since: "2023-05-17 16:30:40"
+  since: "2023-06-28 16:30:40"
   system:
     URL: "https://doit-intl--stage.sandbox.my.salesforce.com"
     username: "udit.khare+sandbox1@apisero.com"
     authorization_url: "https://test.salesforce.com/services/Soap/u/55.0"
   reconnection:
     frequency: "2000"
-    attempt: "2"    
+    attempt: "5"    
     
+event:
+  LastModifiedById: "['00576000001aTlhAAE']"
 
 recentcreatedcontact:
   lastmodifiedtime: "1682248414000"
@@ -33,9 +39,12 @@ salesforce-sapi:
   responseTimeout: "60000"
   baseurl: ""
   sendCorrelationId : "ALWAYS"
+  reconnection:
+    frequency: "2000"
+    attempt: "5"
 
 hubspot-sapi:
-#  host: "doit-hubspot-sapi-aj0bf.5sc6y6-3.usa-e2.cloudhub.io"
+#  host: "doit-hubspot-sapi.us-e2.cloudhub.io"
 #  port: ""         #for https, Otherwise for http:8081
 #  protocol: "HTTPS"
   host: "localhost"
@@ -48,3 +57,6 @@ hubspot-sapi:
   responseTimeout: "60000"
   baseurl: ""
   sendCorrelationId : "ALWAYS"
+  reconnection:
+    frequency: "2000"
+    attempt: "5"

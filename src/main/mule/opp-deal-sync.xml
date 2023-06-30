@@ -64,7 +64,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 		</http:request>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Info Log" doc:id="d77b0dca-43d6-483f-be6d-adc683574101" message="BDR_Created_By__c Not Present"/>
+				<logger level="DEBUG" doc:name="Info Log" doc:id="d77b0dca-43d6-483f-be6d-adc683574101" message="BDR_Created_By__c Not Present"/>
 			</otherwise>
 		</choice>
 		<flow-ref doc:name="fetch-owner-id-for-salesforce-to-hubspot" doc:id="85f58a19-8e58-42d3-8491-61841a301e46" name="fetch-owner-id-for-salesforce-to-hubspot" target="ownerId" />

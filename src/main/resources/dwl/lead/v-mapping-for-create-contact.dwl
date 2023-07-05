@@ -175,6 +175,10 @@ var picklist = readUrl("classpath://picklist.json", "application/json")
     {
       "property": "associatedcompanyid",
       "value": vars.companyId
+    },
+    {
+      "property": "ms_last_run",
+      "value": (now()) as DateTime as Number {unit:"milliseconds"} as String
     }
   ]
 }

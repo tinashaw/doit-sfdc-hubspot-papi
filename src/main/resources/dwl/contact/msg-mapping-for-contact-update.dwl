@@ -34,5 +34,6 @@ var picklist = readUrl("classpath://picklist.json", "application/json")
 	"jobtitle" : payload.Title,
 	"lifecycle_stage__c" : if(payload.Lifecycle_Stage__c != null ) picklist.contact.Lifecycle_Stage__c[(payload.Lifecycle_Stage__c)] else payload.Lifecycle_Stage__c,
 	"salutation" : payload.Salutation,
-	"associatedcompanyid" : vars.companyId
+	"associatedcompanyid" : vars.companyId,
+	"ms_last_run" : (now()) as DateTime as Number {unit:"milliseconds"} as String
 }

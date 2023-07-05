@@ -35,6 +35,6 @@ var picklist = readUrl("classpath://picklist.json", "application/json")
 	"state" : vars.inputPayload.Hubspot_State_Region__c,
 	"sub_industry__c" : vars.inputPayload.Sub_Industry__c,
 //	"type" : vars.inputPayload.'Type', //pending
-	"website" : vars.inputPayload.Website
-//	"vid" : vars.inputPayload.Hubspot_Company_ID__c
+	"website" : vars.inputPayload.Website,
+	"ms_last_run" : (now()) as DateTime as Number {unit:"milliseconds"} as String
 }

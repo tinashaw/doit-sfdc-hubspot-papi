@@ -11,6 +11,7 @@ output application/json
    numberofemployees : payload.NumberOfEmployees ,
    industry : payload.Industry ,
 //   hubspot_owner_id : payload.OwnerId ,
-   domain  : payload.Email_Domain__c 
+   domain  : payload.Email_Domain__c,
+	"ms_last_run" : (now()) as DateTime as Number {unit:"milliseconds"} as String
     
 }

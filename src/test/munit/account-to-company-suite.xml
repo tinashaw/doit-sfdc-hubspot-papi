@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="account-to-company-suite.xml" />
+	<munit:test name="account-to-company-flow-test" doc:id="61c0a60d-2beb-44bc-9858-679253427f92" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="5c3226c7-39ed-48e6-8329-a66088076c2d" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="65192664-950c-4a8a-9810-1a8211176bd6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="c391d98e-514c-4e5c-8af0-091d297285a7" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://accounttocompanyflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to account-to-company-flow" doc:id="f263b3c6-1f0d-434f-a297-a98967bbaa62" name="account-to-company-flow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="86d06df5-0bb4-4456-a883-f5eddffa55e1" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="65192664-950c-4a8a-9810-1a8211176bd6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sfdc-account-to-company-hubspot-flow-test" doc:id="ce1bcd7a-5af3-496a-b00a-49803ab1f5b1" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Ref to fetch-ownerId-for-salesforce-to-hubspotFlow" doc:id="8ba0bf28-d5c4-4c98-8d0c-1213cdcd4a31" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c5d5a45b-4a53-4350-b5c9-2793e32256e3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/java  --- readUrl('classpath://sfdcaccounttocompanyhubspotflowtest\mock_payload.dwl')]" mediaType="application/java " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://sfdcaccounttocompanyhubspotflowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://sfdcaccounttocompanyhubspotflowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://sfdcaccounttocompanyhubspotflowtest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Flow Reference to update-company-in-hs" doc:id="aa64aafa-6347-40fe-b9f2-87564ff2055a" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="1631ccfd-decc-477b-827f-86d73c483971" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="851c0c3d-1a94-4501-84aa-51860d791916" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://sfdcaccounttocompanyhubspotflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sfdc-account-to-company-hubspot-flow" doc:id="a616efd6-3a4b-4986-a5b0-3a75b265508a" name="sfdc-account-to-company-hubspot-flow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="13089148-407e-4bf8-bd35-46704e15f2e9" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e0418c66-e798-4088-a37a-f41af3625898" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="update-company-in-hs-test" doc:id="c191b5e8-d9a5-4589-a2f3-0a053830bde1" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Request HS Sapi to Update Company" doc:id="27681670-9c85-4b45-8241-3b986b1c73bc" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="6e47af46-0010-4810-8bcc-b3698b2a1c5a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="5e897b66-752f-4590-8540-0ed06577f979" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://updatecompanyinhstest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+				<munit:variables >
+					<munit:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://updatecompanyinhstest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://updatecompanyinhstest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="companyId" value="#[output application/json --- readUrl('classpath://updatecompanyinhstest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://updatecompanyinhstest\set-event_variable_3.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to update-company-in-hs" doc:id="778e16a5-04cd-4247-8d8b-be10c79cbf35" name="update-company-in-hs"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="db79a718-e32b-4df0-b0d7-6bbea6e779f2" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="908e3d90-7228-4547-bb3b-e73c1f87bc37" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="create-company-in-hs-test" doc:id="d395bf6f-3c50-4bf9-be90-36aaa1ec2aff" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Request to sf sapi to sync back HS companyID" doc:id="c8357898-0129-455e-a4d3-036620c177fe" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="02c7be39-9f6b-46fc-b521-17f4f2fca70f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://createcompanyinhstest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="syncBackId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="createdCompany" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Request HS Sapi to Create Company" doc:id="f1ce00bf-095f-4531-8080-6a9249f6ea7a" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e2db84e2-5988-494e-be54-b5908e289731" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://createcompanyinhstest\mock_payload1.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_7.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="createdCompany" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_8.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_9.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\mock_variable_10.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="aa6f703b-a38e-48f4-a8ba-9a0938d9683e" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://createcompanyinhstest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:attributes value="#[readUrl('classpath://createcompanyinhstest\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="companyId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://createcompanyinhstest\set-event_variable_3.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to create-company-in-hs" doc:id="8ad29b40-01c0-48a6-bb8c-cbf430a1111e" name="create-company-in-hs"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="41150bba-b136-434c-92c8-acdb52ba2c42" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import createcompanyinhstest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="company-check-subflow-test" doc:id="a1ec13f9-7efb-4db6-a782-ef82bd04e5c1" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Request to sf sapi to sync back HS companyID" doc:id="eed020ef-36c6-4e58-ae22-0f63ff5786a6" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="2edde53e-6caa-409a-97bc-8b3a162a66c6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://companychecksubflowtest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="syncBackId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Flow Reference to update-company-in-hs" doc:id="b6ed5c69-31e4-4baf-86ed-b31bd4578ac7" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="67894f83-ce26-44a0-b0ac-d84ae2bbdce6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://companychecksubflowtest\mock_payload1.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_7.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_8.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Request to get matching company by SF Company_Domain__c in HS" doc:id="71436ef1-eb36-48dd-b065-139706f40b15" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="44338e4c-6c16-49c6-bd0f-1356f715cc09" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://companychecksubflowtest\mock_payload2.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://companychecksubflowtest\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_9.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_10.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\mock_variable_11.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="2366b2ca-0ee0-4477-8767-8ebe42473b80" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://companychecksubflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+				<munit:variables >
+					<munit:variable key="mappingPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="inputPayload" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://companychecksubflowtest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to company-check-subflow" doc:id="f19be4bd-a417-4a58-8e6f-0dc41abdbe19" name="company-check-subflow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="a3849e0d-9ec8-44a6-8ee0-82466d54152f" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import companychecksubflowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="account-to-company-flow-test-integration-user" doc:id="08af9ae8-1e38-4671-a3a1-2db0bb2a945b" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="fd53562e-ccd2-488a-8151-270427addab0" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://accounttocompanyflowtest\set-event_payload-integration-user.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to account-to-company-flow" doc:id="14ba63a2-300f-4f0b-bef6-3b03a31c7128" name="account-to-company-flow" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="cff72e82-a243-4411-b037-c9c5c7135c16" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Log 'Last Updated by Integration User'" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="b60eed22-c15f-422c-8094-f0a66121f55d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="account-to-company-flow-test-error" doc:id="8577a645-97ea-4d56-9d04-dea3545f10ce" expectedErrorType="ANY">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Ref to sfdc-account-to-company-hubspotFlow" doc:id="4259d9e0-fc7c-4805-8975-ddd4759bc419" processor="flow-ref" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="65192664-950c-4a8a-9810-1a8211176bd6" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="c2bcccb6-5eb8-4a1d-ae55-5c5d1367ea86" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://accounttocompanyflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to account-to-company-flow" doc:id="fcfb640b-bb88-4dcb-b335-1a2419eada91" name="account-to-company-flow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="bdd825b8-fb49-4d31-925f-27cb7454c4ef" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Log Error" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="63c8f8fe-5780-435e-b090-639f58d9b715" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,9 +1,0 @@
-%dw 2.0
-
-type auto_059daae1_44a7_432b_8be7_3bc1d41f72e3_Output_Variables_id = {|
-  email: String {"typeId": "Email"} | Null, 
-  contactId: String {"typeId": "Id"} | Null, 
-  domain?: String {"typeId": "Company_Domain__c"} | Null, 
-  vid?: String {"typeId": "Hubspot_Contact_ID__c"} | Null
-|}
-

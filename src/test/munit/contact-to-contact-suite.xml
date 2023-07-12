@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="contact-to-contact-suite.xml" />
+	<munit:test name="contact-to-contact-create-contact-sub-flow-test" doc:id="9ce882e3-9388-4435-872a-027770c9536f" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock create contact in Hubspot" doc:id="34b52509-938f-49b9-87f7-ba1078cb0747" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8407aad5-e3ac-4237-9536-c6ab412a7efe" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="hubspotContact" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Update SF Contact" doc:id="6921a7ec-7ca7-4a43-a894-bb8de03600b2" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="472adf57-7451-46fb-98f1-37da7b13aba3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_payload1.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="hubspotContact" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_7.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_8.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\mock_variable_9.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="feb25c0d-a400-4a9a-b593-5b2822e1f397" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:variables >
+					<munit:variable key="hubspotContact" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="id" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="companyId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="accountId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\set-event_variable_3.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contacttocontactcreatecontactsubflowtest\set-event_variable_4.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to contact-to-contact-create-contact-sub-flow" doc:id="4a419b96-4830-49f5-b91d-83b104b249d2" name="contact-to-contact-create-contact-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="670946b0-25cd-430c-aa1a-4a35e3d78943" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import contacttocontactcreatecontactsubflowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="update-contact-in-hs-test" doc:id="969ef8b3-767b-41a9-ab08-2f5c2e00e742" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Request to update contact in Hubspot" doc:id="6f6a8ff9-a56a-4dc0-b2b5-89e915752980" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="fdd6c545-0c52-40a8-9258-5baae3ad4e69" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://updatecontactinhstest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://updatecontactinhstest\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="34612d23-3bf5-4cc7-bdfe-1695ca1b0366" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://updatecontactinhstest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:variables >
+					<munit:variable key="id" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="companyId" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="accountId" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://updatecontactinhstest\set-event_variable_3.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to update-contact-in-hs" doc:id="d0f72da7-aa4c-4ceb-8de6-1839c80e79c3" name="update-contact-in-hs"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="0415b8be-62bc-481d-a366-730253b78b7b" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import updatecontactinhstest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="get-salesforce-account-data-test" doc:id="b3d1964a-1088-4073-9ca6-76ab0cbaf1b9" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Request SF to get Account by Id" doc:id="c5afda06-dc2c-4fea-81dc-13ecb6a8d2c6" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="91d0e4a2-7c11-4b11-b08d-de23c2ae3b6c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://getsalesforceaccountdatatest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://getsalesforceaccountdatatest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://getsalesforceaccountdatatest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://getsalesforceaccountdatatest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Flow Ref to fetch Hubspot Company Id" doc:id="11fb06d4-cfd5-4aaf-b581-33d3cd070b0a" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="2aeb6574-ff17-483b-8052-00c4c41661b3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="4ba5e816-6750-4bd1-84dd-dea0bb0c0a16" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://getsalesforceaccountdatatest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:variables >
+					<munit:variable key="id" value="#[output application/json --- readUrl('classpath://getsalesforceaccountdatatest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="accountId" value="#[output application/json --- readUrl('classpath://getsalesforceaccountdatatest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://getsalesforceaccountdatatest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-salesforce-account-data" doc:id="28de8cb8-a5bf-4022-8844-aee435f2c915" name="get-salesforce-account-data"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="e4330b22-8349-42fd-9346-37381f930032" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="2aeb6574-ff17-483b-8052-00c4c41661b3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="contact-validation-sub-fow-test" doc:id="7a0f03ab-f829-44b4-b169-b8ef96e23092" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Update SF Contact" doc:id="fae9a7e6-0642-4668-89ff-1108edb65089" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="409472b0-8669-43f1-ac86-9b96c2471b6c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Flow Reference update-contact-in-hs" doc:id="be94e650-57b2-438f-a8ea-f3c7fc694274" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="02eadeab-b671-46b3-9b9b-2acd65fad9d2" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://contactvalidationsubfowtest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="eab0f1c0-147f-4401-9f81-0ae0e38cc1de" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://contactvalidationsubfowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:variables >
+					<munit:variable key="id" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="companyId" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="accountId" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contactvalidationsubfowtest\set-event_variable_3.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to contact-validation-sub-fow" doc:id="9d6a748a-7144-4342-b9aa-49be0c27a9a0" name="contact-validation-sub-fow"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="54f0f824-63de-46e9-a7d9-2bc5776122a9" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="782ebf89-d3d4-421b-ae58-2ca4c15a12b2" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="Contact Update in Hubspot  Completed" attributeName="message" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="contact-to-contact-validation-sub-flow-test" doc:id="b4e3db01-5830-4725-beed-0d03a9df1aaa" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Reference update-contact-in-hs" doc:id="f49c6886-062b-4bfd-a54a-df560b72c241" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="82027fd7-7a60-404d-a060-88d34415ddc8" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://contacttocontactvalidationsubflowtest\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="hubspotContact" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock get hubspot contact by email" doc:id="1d63064d-08e4-4f2c-b11f-407375433a3c" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="2cf1ec15-51dc-4746-8fa1-ef002d8d156e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_payload1.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="hubspotContact" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_7.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_8.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_variable_9.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Update SF Contact" doc:id="de80825e-50f0-4bf2-b988-0d6794c66cf6" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="dc247649-cec6-428e-961f-565a126fb656" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://contacttocontactvalidationsubflowtest\mock_payload2.dwl')]" mediaType="application/json " encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="4914079b-3482-49b5-ac8d-852f3a718eb8" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://contacttocontactvalidationsubflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json " />
+				<munit:variables >
+					<munit:variable key="id" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\set-event_variable_.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="companyId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\set-event_variable_1.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="accountId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\set-event_variable_2.dwl')]" encoding="UTF-8" mediaType="application/json" />
+					<munit:variable key="ownerId" value="#[output application/json --- readUrl('classpath://contacttocontactvalidationsubflowtest\set-event_variable_3.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to contact-to-contact-validation-sub-flow" doc:id="165bd39d-9086-4407-86b7-e7269ff8b700" name="contact-to-contact-validation-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="742e8ee8-4605-456e-afc2-70788eedfd8b" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import contacttocontactvalidationsubflowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="contact-to-contact-flow-test-integration-user" doc:id="583843d9-e93f-4e63-87e2-6b0671fb0ed7" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="6de86838-e4ae-41b1-8e96-a459232e33f2" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://contacttocontactflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to contact-to-contact-flow" doc:id="f47da5d4-df01-4ae2-858c-6143ef314c0c" name="contact-to-contact-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="a56f66c8-dfb5-4a4e-9fce-4e445e559f52" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import contacttocontactflowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="contact-to-contact-flow-test" doc:id="4202a39a-fa88-4861-a2a3-d133f70351a4" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="c1160ddd-713e-4256-9051-1302e25a443a" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://contacttocontactflowtest\set-event_payload1.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="d1d7d74c-097e-4807-b5bb-83a823de9dae" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="375305bf-b2e6-4b9c-8f6c-194d3a3b7fad" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="sf-contact-sync-to-hubspot-flow" attributeName="name" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to contact-to-contact-flow" doc:id="3f2d4d8d-2ffe-41a1-bcc7-872fad2c75b9" name="contact-to-contact-flow" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="508c8aaf-4f0f-42d6-a694-b407c6c3f03b" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="375305bf-b2e6-4b9c-8f6c-194d3a3b7fad" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="contact-to-contact-test-suite-get-hubspot-contact-by-email-sub-flowTest" doc:id="4965ab31-389e-4d54-8f51-5be8ae38bb0c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0e5b1c66-701d-4add-8421-db029627bacb" processor="http:request" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="get Hubspot Contact by Email" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="1425803b-bb04-44c7-b161-c80977d18dbb" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HTTP:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-hubspot-contact-by-email-sub-flow" doc:id="98fcc05a-4f96-420d-9169-7b627508971b" name="get-hubspot-contact-by-email-sub-flow" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="1c3e40ca-edd4-41fa-b25f-327a6de958b7" processor="logger" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Log 'No Contact Found'" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="9654acbd-d843-4b57-bf24-83d3e083b570" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sf-contact-sync-to-hubspot-flow-test" doc:id="ca4a505d-a752-477d-86f4-86f246100e80" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Ref to contact-validation-subFlow" doc:id="50f1a65d-18d8-473e-b399-d3367498bceb" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="771219d4-6a83-4e33-a33b-88eb34bff62b" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_payload.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://sfcontactsynctohubspotflowtest\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_2.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock fetch ownerId" doc:id="6fad7df7-4dca-43ad-b574-427e55efb8f9" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="d72d7346-2075-477e-afb2-ac7926375de7" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_payload1.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_5.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_7.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock Flow Ref to fetch Hubspot CompanyId" doc:id="9bd98414-fefc-4797-9899-020c3ebbc0f9" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8ac1f8c2-bb33-4aa2-a5e6-0e07c0a4b99f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json  --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_payload2.dwl')]" mediaType="application/json " encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="id" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_8.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="companyId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_9.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="accountId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_10.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="ownerId" value="#[output application/json --- readUrl('classpath://sfcontactsynctohubspotflowtest\mock_variable_11.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="0f7b3408-13ed-4aa8-a56e-de4a32af5090" >
+				<munit:payload value="#[output application/java  --- readUrl('classpath://sfcontactsynctohubspotflowtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/java " />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sf-contact-sync-to-hubspot-flow" doc:id="d188128f-d706-4660-92eb-bf008206823f" name="sf-contact-sync-to-hubspot-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="0762ae04-ef3c-4706-8f28-a070c7a7be22" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import sfcontactsynctohubspotflowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
